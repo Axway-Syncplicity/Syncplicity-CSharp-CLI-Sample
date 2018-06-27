@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{87F85ED3-9639-4172-9324-8001C958F388}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CSharpSampleApp</RootNamespace>
+    <AssemblyName>CSharpSample App</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="JsonPrettyPrinterPlus">
+      <HintPath>..\packages\JsonPrettyPrinter.1.0.1.1\lib\net35\JsonPrettyPrinterPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Blend\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Entities\Billing\BillingInfo.cs" />
+    <Compile Include="Entities\Billing\BillingInterval.cs" />
+    <Compile Include="Entities\Billing\CreditCard.cs" />
+    <Compile Include="Entities\Billing\PaymentMethod.cs" />
+    <Compile Include="Entities\Billing\SubscriptionPlan.cs" />
+    <Compile Include="Entities\Billing\SubscriptionType.cs" />
+    <Compile Include="Entities\Company\Company.cs" />
+    <Compile Include="Entities\Company\CompanyAccountType.cs" />
+    <Compile Include="Entities\File\File.cs" />
+    <Compile Include="Entities\File\FileStatus.cs" />
+    <Compile Include="Entities\File\FileVersion.cs" />
+    <Compile Include="Entities\Folder\Folder.cs" />
+    <Compile Include="Entities\Folder\FolderStatus.cs" />
+    <Compile Include="Entities\GOL\Rol.cs" />
+    <Compile Include="Entities\Group\Group.cs" />
+    <Compile Include="Entities\Group\StorageQuota.cs" />
+    <Compile Include="Entities\Link\Link.cs" />
+    <Compile Include="Entities\Link\LinkUsage.cs" />
+    <Compile Include="Entities\PII\Model.cs" />
+    <Compile Include="Entities\PolicySet\EntitySetType.cs" />
+    <Compile Include="Entities\PolicySet\PolicySet.cs" />
+    <Compile Include="Entities\Policy\AdminIpRestriction.cs" />
+    <Compile Include="Entities\Policy\AdminIpRestrictionPolicy.cs" />
+    <Compile Include="Entities\Policy\AdminPasswordComplexity.cs" />
+    <Compile Include="Entities\Policy\AdminPasswordComplexityPolicy.cs" />
+    <Compile Include="Entities\Policy\BranchingPolicy.cs" />
+    <Compile Include="Entities\Policy\CachedPasswordExpirationPolicy.cs" />
+    <Compile Include="Entities\Policy\ClientAutoUpdatePolicy.cs" />
+    <Compile Include="Entities\Policy\ClientPreconfiguredPolicy.cs" />
+    <Compile Include="Entities\Policy\ConcurrentUseNotificationPolicy.cs" />
+    <Compile Include="Entities\Policy\ConcurrentUseReactionModePolicy.cs" />
+    <Compile Include="Entities\Policy\Country.cs" />
+    <Compile Include="Entities\Policy\DesktopShareLinkFlowPolicy.cs" />
+    <Compile Include="Entities\Policy\EnforceClientMemberActiveDirectoryPolicy.cs" />
+    <Compile Include="Entities\Policy\FileExclusionPolicy.cs" />
+    <Compile Include="Entities\Policy\FileExclusionType.cs" />
+    <Compile Include="Entities\Policy\GeolocationPrivacyPolicy.cs" />
+    <Compile Include="Entities\Policy\HomeDirectoryPolicy.cs" />
+    <Compile Include="Entities\Policy\IncludeOwnerInFolderNamePolicy.cs" />
+    <Compile Include="Entities\Policy\MobileDataSyncLimit.cs" />
+    <Compile Include="Entities\Policy\MobileSyncLimitsPolicy.cs" />
+    <Compile Include="Entities\Policy\MobileSyncPolicy.cs" />
+    <Compile Include="Entities\Policy\MobileUnencryptedSyncPolicy.cs" />
+    <Compile Include="Entities\Policy\OpenInPolicy.cs" />
+    <Compile Include="Entities\Policy\PasscodeEnforcementPolicy.cs" />
+    <Compile Include="Entities\Policy\PasscodeFailurePolicy.cs" />
+    <Compile Include="Entities\Policy\PasscodeFailures.cs" />
+    <Compile Include="Entities\Policy\PasswordComplexityOptions.cs" />
+    <Compile Include="Entities\Policy\PasswordComplexty.cs" />
+    <Compile Include="Entities\Policy\Policy.cs" />
+    <Compile Include="Entities\Policy\PolicyPublic.cs" />
+    <Compile Include="Entities\Policy\RemoteWipeEndpointPolicy.cs" />
+    <Compile Include="Entities\Policy\RemoteWipeSyncpointPolicy.cs" />
+    <Compile Include="Entities\Policy\RemoteWipeUsersPolicy.cs" />
+    <Compile Include="Entities\Policy\ReportExportOutputFolderPolicy.cs" />
+    <Compile Include="Entities\Policy\RestrictMobileAccessPolicy.cs" />
+    <Compile Include="Entities\Policy\RestrictWebsiteAccessPolicy.cs" />
+    <Compile Include="Entities\Policy\RssNewsFeedPolicy.cs" />
+    <Compile Include="Entities\Policy\ShareableLinkPolicy.cs" />
+    <Compile Include="Entities\Policy\SharedFolderPolicy.cs" />
+    <Compile Include="Entities\Policy\SharedFolderResharingPolicy.cs" />
+    <Compile Include="Entities\Policy\ShareLinkExpirationPolicy.cs" />
+    <Compile Include="Entities\Policy\ShareLinkPasswordComplexity.cs" />
+    <Compile Include="Entities\Policy\ShareLinkPasswordProtectedPolicy.cs" />
+    <Compile Include="Entities\Policy\ShareLinkPolicy.cs" />
+    <Compile Include="Entities\Policy\StorageCookiePersistancePolicy.cs" />
+    <Compile Include="Entities\Policy\StoragePasswordComplexity.cs" />
+    <Compile Include="Entities\Policy\StoragePasswordComplexityPolicy.cs" />
+    <Compile Include="Entities\Policy\StoragePasswordPolicy.cs" />
+    <Compile Include="Entities\Quota\Quota.cs" />
+    <Compile Include="Entities\Quota\QuotaAllocationType.cs" />
+    <Compile Include="Entities\Quota\QuotaOwnership.cs" />
+    <Compile Include="Entities\Report\ReportExportRequestBase.cs" />
+    <Compile Include="Entities\Report\ReportExportRequestStorageByUser.cs" />
+    <Compile Include="Entities\Storage\StorageEndpoint.cs" />
+    <Compile Include="Entities\Storage\StorageEndpointAuth.cs" />
+    <Compile Include="Entities\Storage\StorageEndpointUrl.cs" />
+    <Compile Include="Entities\SyncPointParticipant\Participant.cs" />
+    <Compile Include="Entities\SyncPointParticipant\ShareWithNewParticipantOption.cs" />
+    <Compile Include="Entities\SyncPointParticipant\SharingPermission.cs" />
+    <Compile Include="Entities\Syncpoint\Machine.cs" />
+    <Compile Include="Entities\Syncpoint\Mapping.cs" />
+    <Compile Include="Entities\Syncpoint\ServerStatus.cs" />
+    <Compile Include="Entities\Syncpoint\SyncPoint.cs" />
+    <Compile Include="Entities\Syncpoint\SyncPointPolicy.cs" />
+    <Compile Include="Entities\Syncpoint\SyncPointType.cs" />
+    <Compile Include="Entities\User\AccountStatus.cs" />	
+    <Compile Include="Entities\User\AccountType.cs" />
+    <Compile Include="Entities\User\User.cs" />
+    <Compile Include="Examples\CrossRolExample.cs" />
+    <Compile Include="Examples\ContentExample.cs" />
+    <Compile Include="Examples\ProvisioningExample.cs" />
+    <Compile Include="OAuth\OAuth.cs" />
+    <Compile Include="OAuth\TokenResponse.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\APIContext.cs" />
+    <Compile Include="Services\APIGateway.cs" />
+    <Compile Include="Services\GOLGateway.cs" />
+    <Compile Include="Services\Download\DownloadClient.cs" />
+    <Compile Include="Services\FoldersService.cs" />
+    <Compile Include="Services\GrantType.cs" />
+    <Compile Include="Services\GroupMembersService.cs" />
+    <Compile Include="Services\ParticipantsService.cs" />
+    <Compile Include="Services\GroupsService.cs" />    
+    <Compile Include="Services\UserPIIService.cs" />
+    <Compile Include="Services\StorageEndpointsService.cs" />
+    <Compile Include="Services\SyncPointsService.cs" />
+    <Compile Include="Services\SyncService.cs" />
+    <Compile Include="Services\Upload\UploadClient.cs" />
+    <Compile Include="Services\Upload\UploadClientSettings.cs" />
+    <Compile Include="Services\UsersService.cs" />
+    <Compile Include="Util\ConfigurationHelper.cs" />
+    <Compile Include="Util\Serialization.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Newtonsoft.Json.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
