@@ -1,7 +1,7 @@
 # Syncplicity-CSharp-SLI-Sample
 
 ## Description
-This sample app is similar to the Java command-line sample app but has been extended to show how a developer might invoke various APIs against Active Directory (AD) to provision users and assign those users to various user groups based on the metadata that is configured inside AD.
+This command-line sample app demonstrates various API calls including the initial OAuth2 authentication call. This type of application would not support SSO-based authentication, so would be the basis of an application typically used by administrator, not by a typical corporate user.
 
 
 ## Usage
