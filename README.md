@@ -1,4 +1,4 @@
-# Syncplicity-CSharp-SLI-Sample
+# Syncplicity-CSharp-CLI-Sample
 
 ## Description
 This command-line sample app demonstrates various API calls including the initial OAuth2 authentication call. This type of application would not support SSO-based authentication, so would be the basis of an application typically used by administrator, not by a typical corporate user.
