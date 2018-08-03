@@ -1,21 +1,19 @@
-﻿using System;
-
-using CSharpSampleApp.Services;
+﻿using CSharpSampleApp.Services;
 using CSharpSampleApp.Util;
 
 
 namespace CSharpSampleApp.OAuth
 {
-    public class OAuth : APIGateway
+    public class OAuth : ApiGateway
     {
-        public static void authenticate()
+        public static void Authenticate()
         {            
-            TokenResponse response = HttpPost<TokenResponse>(GolGateway.OAuthTokenUrl,
+            var response = HttpPost<TokenResponse>(GolGateway.OAuthTokenUrl,
                                                              "grant_type=client_credentials&scope=read%20readwrite",
                                                              "application/x-www-form-urlencoded",
                                                              true);
 
-            APIContext.OAuthResponse = response;
+            ApiContext.OAuthResponse = response;
 
             if (ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled)
             {
@@ -24,7 +22,7 @@ namespace CSharpSampleApp.OAuth
                 "application/x-www-form-urlencoded",
                 true, true);
                 
-                APIContext.MachineToken = response.AccessToken;
+                ApiContext.MachineToken = response.AccessToken;
             }
         }
 
@@ -32,21 +30,21 @@ namespace CSharpSampleApp.OAuth
         //and any refresh-tokens along with removing
         //the grant of access to the application to 
         //the given user account.   
-        public static void revokeToken() {
+        public static void RevokeToken() {
 
 
-            TokenResponse response = HttpGet<TokenResponse>(GolGateway.OAuthRevokeTokenUrl);
+            var response = HttpGet<TokenResponse>(GolGateway.OAuthRevokeTokenUrl);
 
             //response will/should be null for revoke
-            APIContext.OAuthResponse = response;
+            ApiContext.OAuthResponse = response;
 	    }
 	
-	    public static void refreshToken() {
+	    public static void RefreshToken() {
 		
 		    //Note: technically refreshToken() which uses grant_type=client_credentials is the same
 		    //      behavior as just authenticating authenticate() for the first time.  The name is 
 		    //      just to be explicit in the use-case
-		    authenticate();
+		    Authenticate();
 	    }
     }
 }

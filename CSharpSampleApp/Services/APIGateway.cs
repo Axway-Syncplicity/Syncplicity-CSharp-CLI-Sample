@@ -3,7 +3,6 @@ using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading;
 using CSharpSampleApp.Util;
 using Newtonsoft.Json;
 using JsonPrettyPrinterPlus;
@@ -13,43 +12,30 @@ namespace CSharpSampleApp.Services
     /// <summary>
     /// Base class for API services.
     /// </summary>
-    public class APIGateway
+    public class ApiGateway
     {
-        const String JSON_CONTENT_TYPE = "application/json";
+        const string JsonContentType = "application/json";
 
         #region Protected Properties
 
         /// <summary>
         /// Gets or sets the base url for auth endpoint.
         /// </summary>        
-        public static string StorageAPIUrlPrefix 
-        { 
-            get { return GolGateway.BaseApiEndpointUrl + "/storage/"; }
-        }
-        public static string SyncAPIUrlPrefix 
-        { 
-            get { return GolGateway.BaseApiEndpointUrl + "/sync/"; }
-        }
+        public static string StorageAPIUrlPrefix => GolGateway.BaseApiEndpointUrl + "/storage/";
 
-        public static string SyncpointAPIUrlPrefix 
-        {
-            get { return GolGateway.BaseApiEndpointUrl + "/syncpoint/"; }
-        }
-            /// <summary>
+        public static string SyncAPIUrlPrefix => GolGateway.BaseApiEndpointUrl + "/sync/";
+
+        public static string SyncpointAPIUrlPrefix => GolGateway.BaseApiEndpointUrl + "/syncpoint/";
+
+        /// <summary>
         /// Gets or sets the base url for auth endpoint.
         /// </summary>
-        protected static string ProvisioningAPIUrlPrefix
-        {
-            get { return GolGateway.BaseApiEndpointUrl + "/provisioning/"; }
-        }
+        protected static string ProvisioningAPIUrlPrefix => GolGateway.BaseApiEndpointUrl + "/provisioning/";
 
         /// <summary>
         /// Gets or sets the base url for users_pii service.
         /// </summary>
-        protected static string RolAPIUrlPrefix
-        {
-            get { return GolGateway.BaseApiEndpointUrl + "/rol/"; }
-        }
+        protected static string RolAPIUrlPrefix => GolGateway.BaseApiEndpointUrl + "/rol/";
 
         #endregion
 
@@ -68,12 +54,11 @@ namespace CSharpSampleApp.Services
             //need to manage that bearer token and use it for subsequent calls to the API gateway.
             if (isFirstAuthCall)
             {
-                string encoded = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes
-                (
-                    ConfigurationHelper.ApplicationKey + ":" + ConfigurationHelper.ApplicationSecret
-                ));
+                var basicAuthRawToken = ConfigurationHelper.ApplicationKey + ":" + ConfigurationHelper.ApplicationSecret;
+                var basicAuthToken = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(basicAuthRawToken));
+                Console.WriteLine("[Header] Authorization: Basic " + basicAuthToken + " (Base64 encoded combination of App key and App secret)");
+                request.Headers.Add("Authorization", "Basic " + basicAuthToken);
 
-                Console.WriteLine("[Header] Authorization: Basic " + encoded + " (Base64 encoded combination of App key and App secret)");
                 if (isMachineAuthentication)
                 {
                     if (!ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled)
@@ -88,20 +73,19 @@ namespace CSharpSampleApp.Services
                     Console.WriteLine("[Header] Sync-App-Token: " + ConfigurationHelper.GetSyncplicityAdminToken(GolGateway.CurrentRol.Id));
                     request.Headers.Add("Sync-App-Token", ConfigurationHelper.GetSyncplicityAdminToken(GolGateway.CurrentRol.Id));
                 }
-                request.Headers.Add("Authorization", "Basic " + encoded);
             }
             else
             {
                 Console.WriteLine("[Header] AppKey: " + ConfigurationHelper.ApplicationKey );
-    			Console.WriteLine("[Header] Authorization: Bearer " +  APIContext.AccessToken );
+    			Console.WriteLine("[Header] Authorization: Bearer " +  ApiContext.AccessToken );
                 request.Headers.Add("AppKey", ConfigurationHelper.ApplicationKey);
-                request.Headers.Add("Authorization", "Bearer " + (bearer ?? APIContext.AccessToken));
+                request.Headers.Add("Authorization", "Bearer " + (bearer ?? ApiContext.AccessToken));
             }
 
-            if (APIContext.OnBehalfOfUser.HasValue)
+            if (ApiContext.OnBehalfOfUser.HasValue)
             {
-                Console.WriteLine("[Header] As-User: " + APIContext.OnBehalfOfUser.Value.ToString("D"));
-                request.Headers.Add("As-User", APIContext.OnBehalfOfUser.Value.ToString("D"));
+                Console.WriteLine("[Header] As-User: " + ApiContext.OnBehalfOfUser.Value.ToString("D"));
+                request.Headers.Add("As-User", ApiContext.OnBehalfOfUser.Value.ToString("D"));
             }
 
             return request;
@@ -113,10 +97,10 @@ namespace CSharpSampleApp.Services
         /// <typeparam name="T">The type of received object.</typeparam>
         /// <param name="request">The request object.</param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
-        private static T ReadResponse<T>(HttpWebRequest request)
+        private static T ReadLastAttemptResponse<T>(WebRequest request)
         {
-            bool isNeededReAuth = false;
-            return ReadResponse<T>(request, out isNeededReAuth);
+            bool isNeededReAuth;
+            return ReadResponse<T>(request, 1, out isNeededReAuth);
         }
 
         /// <summary>
@@ -124,8 +108,24 @@ namespace CSharpSampleApp.Services
         /// </summary>
         /// <typeparam name="T">The type of received object.</typeparam>
         /// <param name="request">The request object.</param>
+        /// <param name="isNeededReAuth">
+        /// Outputs a value that determines if re-authentication should be performed with a subsequent additional request attempt.
+        /// </param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
-        private static T ReadResponse<T>(HttpWebRequest request, out bool isNeededReAuth)
+        private static T ReadFirstAttemptResponse<T>(WebRequest request, out bool isNeededReAuth)
+        {
+            return ReadResponse<T>(request, 0, out isNeededReAuth);
+        }
+
+
+        /// <summary>
+        /// Reads the response from the request and returns the received object.
+        /// </summary>
+        /// <typeparam name="T">The type of received object.</typeparam>
+        /// <param name="request">The request object.</param>
+        /// <param name="requestAttemptIndex">The index of this attempt to execute request.</param>
+        /// <returns>The object representation of received response or default of T if response is empty.</returns>
+        private static T ReadResponse<T>(WebRequest request, int requestAttemptIndex, out bool isNeededReAuth)
         {
             isNeededReAuth = false;
 
@@ -144,7 +144,7 @@ namespace CSharpSampleApp.Services
                         responseStream.CopyTo(memoryStream);
                         memoryStream.Position = 0;
 
-                        string response = Encoding.UTF8.GetString(memoryStream.ToArray());
+                        var response = Encoding.UTF8.GetString(memoryStream.ToArray());
                         Console.WriteLine("[Response] " );
 
                         var pp = new JsonPrettyPrinter(new JsonPrettyPrinterPlus.JsonPrettyPrinterInternals.JsonPPStrategyContext());
@@ -162,7 +162,7 @@ namespace CSharpSampleApp.Services
                             }
                         }
 
-                        return (T) ((object) response);
+                        return (T) (object) response;
                     }
                 }
             }
@@ -175,13 +175,16 @@ namespace CSharpSampleApp.Services
                     return default(T);
                 }
 
-                Console.WriteLine("Error {1} {2} occurs during request to {0}.", response.ResponseUri, (int)response.StatusCode, response.StatusDescription);
+                Console.WriteLine($"Error {(int)response.StatusCode} {response.StatusDescription} occurs during request to {response.ResponseUri}.");
 
                 // it's needed to authorize again and then send the same request again
-                if (response.StatusCode == HttpStatusCode.Unauthorized ||
-                    (response.StatusCode == HttpStatusCode.Forbidden && response.StatusDescription == "Forbidden"))
+                var unauthorizedProbablyBecauseOfExpiredToken = response.StatusCode == HttpStatusCode.Unauthorized ||
+                        response.StatusCode == HttpStatusCode.Forbidden && response.StatusDescription == "Forbidden";
+                var isFirstRequestAttempt = requestAttemptIndex == 0;
+                if (unauthorizedProbablyBecauseOfExpiredToken && isFirstRequestAttempt)
                 {
                     isNeededReAuth = true;
+                    return default(T);
                 }
 
                 using (var stream = response.GetResponseStream())
@@ -199,13 +202,12 @@ namespace CSharpSampleApp.Services
                 }
                 Console.WriteLine("WebException:");
                 Console.WriteLine(e);
+                throw;
             }
-
-            return default(T);
         }
 
         /// <summary>
-        /// Creates request obejct.
+        /// Creates request object.
         /// </summary>
         /// <param name="method">The request's method.</param>
         /// <param name="uri">The url of request.</param>
@@ -215,7 +217,7 @@ namespace CSharpSampleApp.Services
             Console.WriteLine("Creating {0} request to {1}", method.ToUpper(), uri);
             var request = WebRequest.Create(uri) as HttpWebRequest;
             request.Method = method.ToUpper();
-            request.Accept = JSON_CONTENT_TYPE;
+            request.Accept = JsonContentType;
             request.CookieContainer = new CookieContainer();
             request.Timeout = 30000;
             return ApplyConsumerCredentials(request, isFirstAuthCall, isMachineAuthentication, bearer:bearer);
@@ -226,13 +228,13 @@ namespace CSharpSampleApp.Services
         /// </summary>
         /// <param name="request">The request object.</param>
         /// <param name="body">The string representation of body.</param>
-        private static void WriteBody(HttpWebRequest request, string body)
+        private static void WriteBody(WebRequest request, string body)
         {
             var pp = new JsonPrettyPrinter(new JsonPrettyPrinterPlus.JsonPrettyPrinterInternals.JsonPPStrategyContext());
             Console.WriteLine("[Body] " );
             Console.WriteLine( pp.PrettyPrint(body) );
 
-            byte[] data = Encoding.ASCII.GetBytes(body);
+            var data = Encoding.ASCII.GetBytes(body);
             request.ContentLength = data.Length;
 
             using (var requestStream = request.GetRequestStream())
@@ -254,33 +256,31 @@ namespace CSharpSampleApp.Services
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
         protected static T HttpGet<T>(string uri)
         {
-            string method = "GET";
+            const string method = "GET";
             var request = CreateRequest(method, uri);
 
-            bool isNeededReAuth = false;
-            var response = ReadResponse<T>(request, out isNeededReAuth);
+            bool isNeededReAuth;
+            var response = ReadFirstAttemptResponse<T>(request, out isNeededReAuth);
+            if (!isNeededReAuth) return response;
 
-            if (isNeededReAuth)
+            Console.WriteLine();
+            Console.WriteLine("Trying to re-authenticate using the same credentials.");
+
+            // it's needed to authorize again
+            // trying to do it and then re-send the initial request
+            OAuth.OAuth.RefreshToken();
+
+            Console.WriteLine();
+            if (!ApiContext.Authenticated)
             {
-                Console.WriteLine();
-                Console.WriteLine("Trying to re-authenticate using the same credentials.");
-
-                // it's needed to authorize again
-                // trying to do it and then re-send the initial request
-                OAuth.OAuth.refreshToken();
-
-                Console.WriteLine();
-                if (!APIContext.Authenticated)
-                {
-                    Console.WriteLine("The OAuth authentication has failed, GET request can't be performed.");
-                    return default(T);
-                }
-
-                Console.WriteLine("Authentication was successful. Trying to send GET request again for the last time.");
-
-                request = CreateRequest(method, uri);
-                response = ReadResponse<T>(request);
+                Console.WriteLine("The OAuth authentication has failed, GET request can't be performed.");
+                return default(T);
             }
+
+            Console.WriteLine("Authentication was successful. Trying to send GET request again for the last time.");
+
+            request = CreateRequest(method, uri);
+            response = ReadLastAttemptResponse<T>(request);
 
             return response;
         }
@@ -292,44 +292,42 @@ namespace CSharpSampleApp.Services
         /// <typeparam name="T">The type of returned object.</typeparam>
         /// <param name="uri">The request url.</param>
         /// <param name="body">The request body.</param>
-        /// <param name="isMachineAuthentication">Set to true if machine authentication is reqired instead of regular user authentication.
+        /// <param name="isMachineAuthentication">Set to true if machine authentication is required instead of regular user authentication.
         /// As a result different headers will be used</param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
         protected static T HttpPost<T>(string uri, string body, string contentType, bool isFirstAuthCall = false, bool isMachineAuthentication = false, string bearer = null)
         {
-            string method = "POST";
+            const string method = "POST";
             var request = CreateRequest(method, uri, isFirstAuthCall, isMachineAuthentication, bearer: bearer);
 
             request.ContentType = contentType;
             WriteBody(request, body);
 
-            bool isNeededReAuth = false;
-            var response = ReadResponse<T>(request, out isNeededReAuth);
+            bool isNeededReAuth;
+            var response = ReadFirstAttemptResponse<T>(request, out isNeededReAuth);
+            if (isFirstAuthCall || !isNeededReAuth) return response;
 
-            if (!isFirstAuthCall && isNeededReAuth)
+            Console.WriteLine();
+            Console.WriteLine("Trying to re-authenticate using the same credentials.");
+
+            // it's needed to authorize again
+            // trying to do it and then re-send the initial request
+            OAuth.OAuth.RefreshToken();
+
+            Console.WriteLine();
+            if (!ApiContext.Authenticated)
             {
-                Console.WriteLine();
-                Console.WriteLine("Trying to re-authenticate using the same credentials.");
-
-                // it's needed to authorize again
-                // trying to do it and then re-send the initial request
-                OAuth.OAuth.refreshToken();
-
-                Console.WriteLine();
-                if (!APIContext.Authenticated)
-                {
-                    Console.WriteLine("The OAuth authentication has failed, POST request can't be performed.");
-                    return default(T);
-                }
-
-                Console.WriteLine("Authentication was successful. Trying to send POST request again for the last time.");
-
-                request = CreateRequest(method, uri, isFirstAuthCall, isMachineAuthentication);
-                request.ContentType = contentType;
-                WriteBody(request, body);
-
-                response = ReadResponse<T>(request);
+                Console.WriteLine("The OAuth authentication has failed, POST request can't be performed.");
+                return default(T);
             }
+
+            Console.WriteLine("Authentication was successful. Trying to send POST request again for the last time.");
+
+            request = CreateRequest(method, uri, false, isMachineAuthentication);
+            request.ContentType = contentType;
+            WriteBody(request, body);
+
+            response = ReadLastAttemptResponse<T>(request);
 
             return response;
         }
@@ -345,14 +343,14 @@ namespace CSharpSampleApp.Services
         protected static T HttpPost<T>(string uri, T body)
             where T : class
         {
-            return HttpPost<T>(uri, Serialization.JSONSerizalize(body), JSON_CONTENT_TYPE);
+            return HttpPost<T>(uri, Serialization.JSONSerizalize(body), JsonContentType);
         }
 
         protected static TResult HttpPost<TResult, TBody>(string uri, TBody body, string bearer = null)
             where TResult : class
             where TBody : class
         {
-            return HttpPost<TResult>(uri, Serialization.JSONSerizalize(body), JSON_CONTENT_TYPE, bearer: bearer);
+            return HttpPost<TResult>(uri, Serialization.JSONSerizalize(body), JsonContentType, bearer: bearer);
         }
 
 
@@ -364,37 +362,35 @@ namespace CSharpSampleApp.Services
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
         protected static T HttpDelete<T>(string uri, object body = null)
         {
-            string method = "DELETE";
+            const string method = "DELETE";
             var request = CreateRequest(method, uri);
             if (body != null)
             {
-                request.ContentType = JSON_CONTENT_TYPE;
+                request.ContentType = JsonContentType;
                 WriteBody(request, Serialization.JSONSerizalize(body));
             }
-            bool isNeededReAuth = false;
-            var response = ReadResponse<T>(request, out isNeededReAuth);
+            bool isNeededReAuth;
+            var response = ReadFirstAttemptResponse<T>(request, out isNeededReAuth);
+            if (!isNeededReAuth) return response;
 
-            if (isNeededReAuth)
+            Console.WriteLine();
+            Console.WriteLine("Trying to re-authenticate using the same credentials.");
+
+            // it's needed to authorize again
+            // trying to do it and then re-send the initial request
+            OAuth.OAuth.RefreshToken();
+
+            Console.WriteLine();
+            if (!ApiContext.Authenticated)
             {
-                Console.WriteLine();
-                Console.WriteLine("Trying to re-authenticate using the same credentials.");
-
-                // it's needed to authorize again
-                // trying to do it and then re-send the initial request
-                OAuth.OAuth.refreshToken();
-
-                Console.WriteLine();
-                if (!APIContext.Authenticated)
-                {
-                    Console.WriteLine("The OAuth authentication has failed, DELETE request can't be performed.");
-                    return default(T);
-                }
-
-                Console.WriteLine("Authentication was successful. Trying to send DELETE request again for the last time.");
-
-                request = CreateRequest(method, uri);
-                response = ReadResponse<T>(request);
+                Console.WriteLine("The OAuth authentication has failed, DELETE request can't be performed.");
+                return default(T);
             }
+
+            Console.WriteLine("Authentication was successful. Trying to send DELETE request again for the last time.");
+
+            request = CreateRequest(method, uri);
+            response = ReadLastAttemptResponse<T>(request);
 
             return response;
         }
@@ -408,38 +404,36 @@ namespace CSharpSampleApp.Services
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
         protected static T HttpPut<T>(string uri, string body, string contentType)
         {
-            string method = "PUT";
+            const string method = "PUT";
             var request = CreateRequest(method, uri);
             request.ContentType = contentType;
             WriteBody(request, body);
             
-            bool isNeededReAuth = false;
-            var response = ReadResponse<T>(request, out isNeededReAuth);
+            bool isNeededReAuth;
+            var response = ReadFirstAttemptResponse<T>(request, out isNeededReAuth);
+            if (!isNeededReAuth) return response;
 
-            if (isNeededReAuth)
+            Console.WriteLine();
+            Console.WriteLine("Trying to re-authenticate using the same credentials.");
+
+            // it's needed to authorize again
+            // trying to do it and then re-send the initial request
+            OAuth.OAuth.RefreshToken();
+
+            Console.WriteLine();
+            if (!ApiContext.Authenticated)
             {
-                Console.WriteLine();
-                Console.WriteLine("Trying to re-authenticate using the same credentials.");
-
-                // it's needed to authorize again
-                // trying to do it and then re-send the initial request
-                OAuth.OAuth.refreshToken();
-
-                Console.WriteLine();
-                if (!APIContext.Authenticated)
-                {
-                    Console.WriteLine("The OAuth authentication has failed, PUT request can't be performed.");
-                    return default(T);
-                }
-
-                Console.WriteLine("Authentication was successful. Trying to send PUT request again for the last time.");
-
-                request = CreateRequest(method, uri);
-                request.ContentType = contentType;
-                WriteBody(request, body);
-
-                response = ReadResponse<T>(request);
+                Console.WriteLine("The OAuth authentication has failed, PUT request can't be performed.");
+                return default(T);
             }
+
+            Console.WriteLine("Authentication was successful. Trying to send PUT request again for the last time.");
+
+            request = CreateRequest(method, uri);
+            request.ContentType = contentType;
+            WriteBody(request, body);
+
+            response = ReadLastAttemptResponse<T>(request);
 
             return response;
         }
@@ -454,7 +448,7 @@ namespace CSharpSampleApp.Services
         protected static T HttpPut<T>(string uri, T body) 
             where T : class
         {
-            return HttpPut<T>(uri, Serialization.JSONSerizalize(body), JSON_CONTENT_TYPE);
+            return HttpPut<T>(uri, Serialization.JSONSerizalize(body), JsonContentType);
         }
 
         #endregion Protected Methods

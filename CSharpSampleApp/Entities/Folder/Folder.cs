@@ -29,18 +29,9 @@ namespace CSharpSampleApp.Entities
         /// <summary>
         /// Returns a logging-friendly string
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/>
-        /// </returns>
         public string ToLoggingString()
         {
-            return string.Format(
-                "Virtual Path: {0}, Name: {1}, Status: {2}, VirtualFolderId: {3}, DataFolderId: {4}",
-                VirtualPath,
-                Name,
-                Status.ToString(),
-                SyncpointId,
-                FolderId);
+            return $"Virtual Path: {VirtualPath}, Name: {Name}, Status: {Status.ToString()}, VirtualFolderId: {SyncpointId}, DataFolderId: {FolderId}";
         }
     }
 }

@@ -15,17 +15,17 @@ namespace CSharpSampleApp.Entities
         [EnumMember]
         Unknown = 0,
         /// <summary>
-        /// Disable folder resharing for external Users. Folders can only be reshared by folks in the same company.
+        /// Disable folder re-sharing for external Users. Folders can only be re-shared by folks in the same company.
         /// </summary>
         [EnumMember]
         DisallowAll = 1,
         /// <summary>
-        /// Folders can only be reshared by external users who has Editor permissions
+        /// Folders can only be re-shared by external users who has Editor permissions
         /// </summary>
         [EnumMember]
         ExternalEditorOnly = 2,
         /// <summary>
-        /// Allow resharing by anyone (Consumer behavior)
+        /// Allow re-sharing by anyone (Consumer behavior)
         /// </summary>
         [EnumMember]
         AllowAll = 3

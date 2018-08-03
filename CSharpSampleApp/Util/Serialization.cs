@@ -22,27 +22,21 @@ namespace CSharpSampleApp.Util
         /// <returns></returns>
         public static string XmlSerizalize<T>(T entity) where T : class
         {
-            if (entity != null)
-            {
-                using (var ms = new MemoryStream())
-                {
-                    new DataContractSerializer(typeof (T)).WriteObject(ms, entity);
-                    ms.Position = 0;
-                    return Encoding.UTF8.GetString(ms.ToArray());
-                }
-            }
+            if (entity == null) return null;
 
-            return null;
+            using (var ms = new MemoryStream())
+            {
+                new DataContractSerializer(typeof (T)).WriteObject(ms, entity);
+                ms.Position = 0;
+                return Encoding.UTF8.GetString(ms.ToArray());
+            }
         }
 
         public static string JSONSerizalize<T>(T entity) where T : class
         {
-            if (entity != null)
-            {
-                return JsonConvert.SerializeObject(entity);
-            }
+            if (entity == null) return null;
 
-            return null;
+            return JsonConvert.SerializeObject(entity);
         }
 
         /// <summary>
@@ -53,15 +47,12 @@ namespace CSharpSampleApp.Util
         /// <returns></returns>
         public static T Deserizalize<T>(string serialized) where T : class
         {
-            if (!string.IsNullOrWhiteSpace(serialized))
-            {
-                using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(serialized)))
-                {
-                    return (T) new DataContractSerializer(typeof (T)).ReadObject(ms);
-                }
-            }
+            if (string.IsNullOrWhiteSpace(serialized)) return default(T);
 
-            return default(T);
+            using (var ms = new MemoryStream(Encoding.UTF8.GetBytes(serialized)))
+            {
+                return (T) new DataContractSerializer(typeof (T)).ReadObject(ms);
+            }
         }
 
         #endregion Public Static Methods

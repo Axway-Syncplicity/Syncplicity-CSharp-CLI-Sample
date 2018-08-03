@@ -6,7 +6,7 @@ namespace CSharpSampleApp.Services
     /// <summary>
     /// Syncpoints service class.
     /// </summary>
-    public class SyncPointsService : APIGateway
+    public class SyncPointsService : ApiGateway
     {
         /// <summary>
         /// The includes enum.
@@ -23,59 +23,42 @@ namespace CSharpSampleApp.Services
 
         #region Static Members
 
-        private static string _SyncpointsUrl = SyncpointAPIUrlPrefix + "syncpoints.svc/";
-        private static string _SyncpointUrl = SyncpointAPIUrlPrefix + "syncpoint.svc/{0}";
-        private static string _LinksUrl = SyncpointAPIUrlPrefix + "links.svc/";
-        private static string _SyncPointParticipants = SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
-
         /// <summary>
         /// Gets url to syncpoints service.
         /// </summary>
-        protected static string SyncpointsUrl
-        {
-            get { return _SyncpointsUrl; }
-        }
+        protected static string SyncpointsUrl { get; } = SyncpointAPIUrlPrefix + "syncpoints.svc/";
 
         /// <summary>
         /// Gets url to syncpoint service.
         /// </summary>
-        protected static string SyncpointUrl
-        {
-            get { return _SyncpointUrl; }
-        }
+        protected static string SyncpointUrl { get; } = SyncpointAPIUrlPrefix + "syncpoint.svc/{0}";
 
         /// <summary>
         /// Gets url to links service.
         /// </summary>
-        protected static string LinksUrl
-        {
-            get { return _LinksUrl; }
-        }
+        protected static string LinksUrl { get; } = SyncpointAPIUrlPrefix + "links.svc/";
 
         /// <summary>
         /// Gets url to syncpoint participants service.
         /// </summary>
-        protected static string SyncPointParticipants
-        {
-            get { return _SyncPointParticipants; }
-        }
+        protected static string SyncPointParticipants { get; } = SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
 
         #endregion Static Members
 
         #region Public Methods
 
         /// <summary>
-        /// Gets synpoints.
+        /// Gets syncpoints.
         /// </summary>
         /// <param name="include">The include param.</param>
         /// <returns>The array of syncpoints.</returns>
         public static SyncPoint[] GetSyncpoints(Include include = Include.None)
         {
-            string includeStr = FormatInclude(include);
+            var includeStr = FormatInclude(include);
 
-            string url = string.IsNullOrWhiteSpace(includeStr)
+            var url = string.IsNullOrWhiteSpace(includeStr)
                 ? SyncpointsUrl
-                : SyncpointsUrl + string.Format("?include={0}", includeStr);
+                : SyncpointsUrl + $"?include={includeStr}";
 
             return HttpGet<SyncPoint[]>(url);
         }
@@ -88,11 +71,11 @@ namespace CSharpSampleApp.Services
         /// <returns>The syncpoint object.</returns>
         public static SyncPoint GetSyncpoint(long syncpointId, Include include = Include.None)
         {
-            string url = string.Format(SyncpointUrl, syncpointId);
+            var url = string.Format(SyncpointUrl, syncpointId);
 
-            string includeStr = FormatInclude(include);
+            var includeStr = FormatInclude(include);
             if (!string.IsNullOrWhiteSpace(includeStr))
-                url += string.Format("?include={0}", includeStr);
+                url += $"?include={includeStr}";
 
             return HttpGet<SyncPoint>(url);
         }
@@ -108,7 +91,7 @@ namespace CSharpSampleApp.Services
         }
 
         /// <summary>
-        /// Creates sahred link..
+        /// Creates shared link..
         /// </summary>
         /// <param name="links">The array of new links.</param>
         /// <returns>The array of newly created links.</returns>
@@ -136,18 +119,18 @@ namespace CSharpSampleApp.Services
         /// <returns>The object of updates syncpoint.</returns>
         public static SyncPoint PutSyncpoint(SyncPoint syncpoint, Include include = Include.None)
         {
-            string url = string.Format(SyncpointUrl, syncpoint.Id);
+            var url = string.Format(SyncpointUrl, syncpoint.Id);
 
-            string includeStr = FormatInclude(include);
+            var includeStr = FormatInclude(include);
             if (!string.IsNullOrWhiteSpace(includeStr))
-                url += string.Format("?include={0}", includeStr);
+                url += $"?include={includeStr}";
 
             return HttpPut(url, syncpoint);
         }
 
         public static void DeleteSyncpoint(long syncpointId)
 		{
-			string url = string.Format(SyncpointUrl, syncpointId);
+			var url = string.Format(SyncpointUrl, syncpointId);
 
 			HttpDelete<object>(url);
 		}

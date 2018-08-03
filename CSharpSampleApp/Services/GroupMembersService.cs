@@ -1,31 +1,24 @@
 ﻿using System;
 
 using CSharpSampleApp.Entities;
-using CSharpSampleApp.Util;
 
 namespace CSharpSampleApp.Services
 {
     /// <summary>
     /// Class for requests to group_members.svc and group_member.svc
     /// </summary>
-    public class GroupMembersService : APIGateway
+    public class GroupMembersService : ApiGateway
     {       
         #region Properties
         /// <summary>
         /// Gets or sets url to GroupMembers service.
         /// </summary>
-        protected static string GroupMembersUrl 
-        {
-            get { return ProvisioningAPIUrlPrefix + "group_members.svc/{0}"; }
-        }
+        protected static string GroupMembersUrl => ProvisioningAPIUrlPrefix + "group_members.svc/{0}";
 
         /// <summary>
         /// Gets or sets url to GroupMember service.
         /// </summary>
-        protected static string GroupMemberUrl 
-        {
-            get { return ProvisioningAPIUrlPrefix + "group_member.svc/{0}/member/{1}"; }
-        }
+        protected static string GroupMemberUrl => ProvisioningAPIUrlPrefix + "group_member.svc/{0}/member/{1}";
 
         #endregion Properties
 

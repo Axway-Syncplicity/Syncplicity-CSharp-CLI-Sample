@@ -13,40 +13,28 @@ namespace CSharpSampleApp.Services
 {
     public static class GolGateway
     {
-        private static Rol[] Rols;
+        private static Rol[] _rols;
         public static Rol CurrentRol { get; private set; }
 
         public static void LoadRols(string email)
         {
-            var uhid = HmacMD5(email);
-            var url = string.Format("{0}/api/v1/rols?uhid={1}", ConfigurationHelper.GolUrl, uhid);
-            Rols = HttpGet<Rol[]>(url);
-            CurrentRol = Rols.Single(x => x.IsHome);
+            var uhid = HmacMd5(email);
+            var url = $"{ConfigurationHelper.GolUrl}/api/v1/rols?uhid={uhid}";
+            _rols = HttpGet<Rol[]>(url);
+            CurrentRol = _rols.Single(x => x.IsHome);
         }
 
-        public static string OAuthRevokeTokenUrl
-        {
-            get { return string.Format("{0}/oauth/revoke", BaseApiEndpointUrl); }
-        }
+        public static string OAuthRevokeTokenUrl => $"{BaseApiEndpointUrl}/oauth/revoke";
 
-        public static string OAuthTokenUrl
-        {
-            get { return string.Format("{0}/oauth/token", BaseApiEndpointUrl); }
-        }
+        public static string OAuthTokenUrl => $"{BaseApiEndpointUrl}/oauth/token";
 
-        public static string BaseApiEndpointUrl
-        {
-            get { return CurrentRol.ApigeeUrl; }
-        }
+        public static string BaseApiEndpointUrl => CurrentRol.ApigeeUrl;
 
         /// <summary>
         /// Gets admin token for the home role
         /// </summary>
         /// <returns></returns>
-        public static string SyncplicityAdminToken
-        {
-            get { return ConfigurationHelper.GetSyncplicityAdminToken(CurrentRol.Id); }
-        }
+        public static string SyncplicityAdminToken => ConfigurationHelper.GetSyncplicityAdminToken(CurrentRol.Id);
 
         /// <summary>
         /// Create GET HTTP request to url return deserialized object T.
@@ -56,18 +44,18 @@ namespace CSharpSampleApp.Services
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
         private static T HttpGet<T>(string uri)
         {
-            string method = "GET";
+            const string method = "GET";
             var request = CreateRequest(method, uri);
             return ReadResponse<T>(request);
         }
 
         /// <summary>
-        /// Creates request obejct.
+        /// Creates request object.
         /// </summary>
         /// <param name="method">The request's method.</param>
         /// <param name="uri">The url of request.</param>
         /// <returns>Created request.</returns>
-        private static HttpWebRequest CreateRequest(string method, string uri, bool isFirstAuthCall = false)
+        private static HttpWebRequest CreateRequest(string method, string uri)
         {
             Console.WriteLine("Creating {0} request to {1}", method.ToUpper(), uri);
 
@@ -80,7 +68,7 @@ namespace CSharpSampleApp.Services
             return request;
         }
 
-        private static T ReadResponse<T>(HttpWebRequest request)
+        private static T ReadResponse<T>(WebRequest request)
         {
             try
             {
@@ -97,7 +85,7 @@ namespace CSharpSampleApp.Services
                         responseStream.CopyTo(memoryStream);
                         memoryStream.Position = 0;
 
-                        string response = Encoding.UTF8.GetString(memoryStream.ToArray());
+                        var response = Encoding.UTF8.GetString(memoryStream.ToArray());
                         Console.WriteLine("[Response] ");
 
                         var pp = new JsonPrettyPrinter(new JsonPrettyPrinterPlus.JsonPrettyPrinterInternals.JsonPPStrategyContext());
@@ -115,7 +103,7 @@ namespace CSharpSampleApp.Services
                             }
                         }
 
-                        return (T)((object)response);
+                        return (T)(object)response;
                     }
                 }
             }
@@ -145,33 +133,33 @@ namespace CSharpSampleApp.Services
                 }
                 Console.WriteLine("WebException:");
                 Console.WriteLine(e);
-            }
 
-            return default(T);
+                throw;
+            }
         }
 
         public static void SwitchRol()
         {
-            CurrentRol = Rols.First(x => x.Id != CurrentRol.Id);
+            CurrentRol = _rols.First(x => x.Id != CurrentRol.Id);
 
             Console.WriteLine("ROL has been switched to '{0}'", CurrentRol.Name);
         }
 
         public static void SwitchRol(int id)
         {
-            CurrentRol = Rols.First(x => x.Id == id);
+            CurrentRol = _rols.First(x => x.Id == id);
 
             Console.WriteLine("ROL has been switched to '{0}'", CurrentRol.Name);
         }
 
-        public static string HmacMD5(string value, string salt = "6adebb9f-21f9-49d8-95bf-b7007a208cd4")
+        public static string HmacMd5(string value, string salt = "6adebb9f-21f9-49d8-95bf-b7007a208cd4")
         {
-            HMACMD5 hmacMD5 = new HMACMD5(Encoding.UTF8.GetBytes(salt));
+            var hmacMd5 = new HMACMD5(Encoding.UTF8.GetBytes(salt));
 
             var email = value.ToLower().Trim();
 
             // step 1, calculate MD5 hash from input
-            var hash = hmacMD5.ComputeHash(Encoding.UTF8.GetBytes(email));
+            var hash = hmacMd5.ComputeHash(Encoding.UTF8.GetBytes(email));
 
             // step 2, get MD5 hash as string
             var sb = new StringBuilder();

@@ -7,15 +7,11 @@ using System.Threading.Tasks;
 
 namespace CSharpSampleApp.Services
 {
-    public class SyncService : APIGateway
+    public class SyncService : ApiGateway
     {
         #region Static Members
 
-        public static string _FolderUrl = SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
-        public static string _FileUrl = SyncAPIUrlPrefix + "file.svc/{0}/file/{1}";
-        public static string _FoldersUrl = SyncAPIUrlPrefix + "folders.svc/{0}/folders?virtual_path={1}";
-        public static string _FolderFoldersUrl = SyncAPIUrlPrefix + "folder_folders.svc/{0}/folder/{1}/folders";
-        public static string _FoldersPOSTUrl = SyncAPIUrlPrefix + "folders.svc/{0}/folders";
+        private static string _FoldersPOSTUrl = SyncAPIUrlPrefix + "folders.svc/{0}/folders";
 
         #endregion Static Members
 
@@ -24,31 +20,19 @@ namespace CSharpSampleApp.Services
         /// <summary>
         /// Gets the url to FolderFoldersService.
         /// </summary>
-        protected static string FolderFoldersUrl
-        {
-            get { return _FolderFoldersUrl; }
-        }
+        protected static string FolderFoldersUrl { get; } = SyncAPIUrlPrefix + "folder_folders.svc/{0}/folder/{1}/folders";
 
         /// <summary>
         /// Gets the url to FolderService.
         /// </summary>
-        protected static string FolderUrl
-        {
-            get { return _FolderUrl; }
-        }
+        protected static string FolderUrl { get; } = SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
 
-        public static string FileUrl
-        {
-            get { return _FileUrl; }
-        }
+        public static string FileUrl { get; } = SyncAPIUrlPrefix + "file.svc/{0}/file/{1}";
 
         /// <summary>
         /// Gets the url to FoldersService.
         /// </summary>
-        protected static string FoldersUrl
-        {
-            get { return _FoldersUrl; }
-        }
+        protected static string FoldersUrl { get; } = SyncAPIUrlPrefix + "folders.svc/{0}/folders?virtual_path={1}";
 
         #endregion Protected Properties
 
@@ -76,7 +60,7 @@ namespace CSharpSampleApp.Services
         }
 
         /// <summary>
-        /// Ctreates new folders in syncpoint.
+        /// Creates new folders in syncpoint.
         /// </summary>
         /// <param name="syncpointId">The Id of syncpoint.</param>
         /// <param name="folderId">The Id of parent folder or Id of root folder of syncpoint.</param>
@@ -88,10 +72,9 @@ namespace CSharpSampleApp.Services
         }
 
         /// <summary>
-        /// Ctreates new folders in syncpoint.
+        /// Creates new folders in syncpoint.
         /// </summary>
         /// <param name="syncpointId">The Id of syncpoint.</param>
-        /// <param name="folderId">The Id of parent folder or Id of root folder of syncpoint.</param>
         /// <param name="folders">The created folder.</param>
         /// <returns></returns>
         public static Folder[] CreateFolders(long syncpointId, Folder[] folders)
@@ -127,19 +110,19 @@ namespace CSharpSampleApp.Services
 
         private static string GetUrl(long syncpointId, long folderId, string include, string modifier, string baseUrl)
         {
-            string uri = string.Format(baseUrl, syncpointId, folderId);
+            var uri = string.Format(baseUrl, syncpointId, folderId);
 
-            if (!String.IsNullOrEmpty(include) && !String.IsNullOrEmpty(modifier))
+            if (!string.IsNullOrEmpty(include) && !string.IsNullOrEmpty(modifier))
             {
-                uri = String.Format("{0}?include={1}&modifier={2}", uri, include, modifier);
+                uri = $"{uri}?include={include}&modifier={modifier}";
             }
-            else if (!String.IsNullOrEmpty(include))
+            else if (!string.IsNullOrEmpty(include))
             {
-                uri = String.Format("{0}?include={1}", uri, include);
+                uri = $"{uri}?include={include}";
             }
-            else if (!String.IsNullOrEmpty(modifier))
+            else if (!string.IsNullOrEmpty(modifier))
             {
-                uri = String.Format("{0}?modifier={1}", uri, modifier);
+                uri = $"{uri}?modifier={modifier}";
             }
 
             return uri;
@@ -149,14 +132,14 @@ namespace CSharpSampleApp.Services
 
         public static void RemoveFolder(long syncpointId, long folderId, bool removePermanently)
         {
-            HttpDelete<Folder>(GetUrl(syncpointId, folderId, String.Empty,
-                removePermanently ? "permanently" : String.Empty, FolderUrl));
+            HttpDelete<Folder>(GetUrl(syncpointId, folderId, string.Empty,
+                removePermanently ? "permanently" : string.Empty, FolderUrl));
         }
 
         public static void RemoveFile(long syncpointId, long fileId, bool removePermanently)
         {
-            HttpDelete<File>(GetUrl(syncpointId, fileId, String.Empty,
-                removePermanently ? "permanently" : String.Empty, FileUrl));
+            HttpDelete<File>(GetUrl(syncpointId, fileId, string.Empty,
+                removePermanently ? "permanently" : string.Empty, FileUrl));
         }
     }
 }

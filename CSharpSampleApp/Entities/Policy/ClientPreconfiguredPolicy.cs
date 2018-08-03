@@ -6,19 +6,19 @@
     public enum ClientPreconfiguredPolicy : short 
     {
         /// <summary>
-        /// Nothing is known about the preconfiguration policy for this company
+        /// Nothing is known about the pre-configuration policy for this company
         /// </summary>
         Unknown = 0,
         /// <summary>
-        /// All machines for this company are preconfigured
+        /// All machines for this company are pre-configured
         /// </summary>
         AllMachinesArePreconfigured = 1,
         /// <summary>
-        /// No machines for this company are preconfigured
+        /// No machines for this company are pre-configured
         /// </summary>
         NoMachinesArePreconfigured = 2,
         /// <summary>
-        /// Some machines are preconfigured (NOT IMPLEMENTED)
+        /// Some machines are pre-configured (NOT IMPLEMENTED)
         /// </summary>
         SomeMachinesArePreconfigured = 3
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 
-using CSharpSampleApp.Entities;
 using CSharpSampleApp.OAuth;
 
 namespace CSharpSampleApp.Services
@@ -8,49 +7,34 @@ namespace CSharpSampleApp.Services
     /// <summary>
     /// The class to store current API context.
     /// </summary>
-    public class APIContext
+    public class ApiContext
     {
         #region Public Properties
 
         /// <summary>
         /// Gets the flag which indicate what current context is authenticated.
         /// </summary>
-        public static bool Authenticated
-        {
-            get { return !string.IsNullOrEmpty(AccessToken); }
-        }
+        public static bool Authenticated => !string.IsNullOrEmpty(AccessToken);
 
         /// <summary>
         /// Gets the current context access token.
         /// </summary>
-        public static string AccessToken
-        {
-            get { return OAuthResponse != null ? OAuthResponse.AccessToken : string.Empty; }
-        }
+        public static string AccessToken => OAuthResponse != null ? OAuthResponse.AccessToken : string.Empty;
 
         /// <summary>
         /// Gets the current context refresh token.
         /// </summary>
-        public static string RefreshToken
-        {
-            get { return OAuthResponse != null ? OAuthResponse.RefreshToken : string.Empty; }
-        }
+        public static string RefreshToken => OAuthResponse != null ? OAuthResponse.RefreshToken : string.Empty;
 
         /// <summary>
         /// Gets the current context user's email.
         /// </summary>
-        public static string UserEmail
-        {
-            get { return OAuthResponse != null ? OAuthResponse.UserEmail : string.Empty; }
-        }
+        public static string UserEmail => OAuthResponse != null ? OAuthResponse.UserEmail : string.Empty;
 
         /// <summary>
         /// Gets the current context user company Id.
         /// </summary>
-        public static Guid? CompanyGuid
-        {
-            get { return OAuthResponse != null ? OAuthResponse.CompanyGuid : null; }
-        }
+        public static Guid? CompanyGuid => OAuthResponse?.CompanyGuid;
 
         public static TokenResponse OAuthResponse { private get;  set; }
 

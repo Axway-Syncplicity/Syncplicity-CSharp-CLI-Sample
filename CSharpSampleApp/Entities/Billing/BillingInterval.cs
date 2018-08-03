@@ -9,7 +9,9 @@ namespace CSharpSampleApp.Entities
     [DataContract(Namespace = "")]
     public enum BillingInterval : short
     {
-        // A type wasn't provided.
+        /// <summary>
+        /// A type wasn't provided.
+        /// </summary>
         [EnumMember]
         Unknown = 0,
 

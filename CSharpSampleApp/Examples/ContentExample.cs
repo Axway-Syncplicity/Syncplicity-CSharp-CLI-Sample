@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -16,106 +17,200 @@ namespace CSharpSampleApp.Examples
 {
     public class ContentExample
     {
-        private static SyncPoint currentSyncpoint = null;
-        private static Folder currentFolder = null;
+        private static SyncPoint _currentSyncpoint;
+        private static Folder _currentFolder;
 
         private static Exception _lastException;
-        private static readonly AutoResetEvent _uploadFinished = new AutoResetEvent(false);
-        private static User oldOwner;
-        private static File currentFile;
+        private static readonly AutoResetEvent UploadFinished = new AutoResetEvent(false);
+        private static User _oldOwner;
 
         /*
-        * Content
-        * - Creating a Syncpoint to allow uploads/downloads to folders
-        * - Creating a folder
-        * - Uploading a file into the folder
-        * - Downloading the uploaded file        
-        * - Removing the uploaded file
-        * - Removing the folder
-        * - Changing owner of the syncpoint
-        */
-        public static void execute()
+         * Content - Simple
+         * - Creating a Syncpoint to allow uploads/downloads to folders
+         * - Creating a folder
+         * - Uploading a file into the folder
+         * - Downloading the uploaded file        
+         * - Removing the uploaded file
+         * - Removing the folder
+         * - Changing owner of the syncpoint
+         */
+        public static void ExecuteSimple()
         {
-            createSyncpoint();
-            if (APIContext.HasStorageEndpoint)
+            if (!ValidateConfigurationForOrdinarySample()) return;
+
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+
+            CreateSyncpoint();
+            if (!ApiContext.HasStorageEndpoint) return;
+
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Simple);
+            DownloadFile(localFilePath);
+            RemoveFile(localFilePath);
+            RemoveFolder();
+            ChangeOwnerOfSyncpoint(ConfigurationHelper.NewSyncpointOwnerEmail);
+        }
+
+        /*
+         * Content - Chunked upload
+         * - Creating a Syncpoint to allow uploads/downloads to folders
+         * - Creating a folder
+         * - Uploading a file into the folder using chunked upload method
+         * - Downloading the uploaded file        
+         * - Removing the uploaded file
+         * - Removing the folder
+         */
+        public static void ExecuteChunked()
+        {
+            if (!ValidateConfigurationForChunkedSample()) return;
+
+            var localFilePath = ConfigurationHelper.UploadFileLarge;
+
+            CreateSyncpoint();
+
+            if (!ApiContext.HasStorageEndpoint) return;
+
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Chunked);
+            DownloadFile(localFilePath);
+            RemoveFile(localFilePath);
+            RemoveFolder();
+        }
+
+        /*
+         * Content - simple upload on behalf of another user
+         * Note: content actions in this example are performed on behalf of the user specified in asUserEmail config setting.
+         *
+         * - Creating a Syncpoint to allow uploads/downloads to folders
+         * - Creating a folder
+         * - Uploading a file into the folder using chunked upload method
+         * - Downloading the uploaded file        
+         * - Removing the uploaded file
+         * - Removing the folder
+         */
+        public static void ExecuteOnBehalfOf()
+        {
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+
+            if (!OnBehalfOfPrepare()) return;
+
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Simple);
+            DownloadFile(localFilePath);
+            RemoveFile(localFilePath);
+            RemoveFolder();
+        }
+
+        private static bool ValidateConfigurationForOrdinarySample()
+        {
+            var errors = EvaluateConfigValidationRulesForOrdinarySample().ToList();
+            if (!errors.Any()) return true;
+
+            Console.WriteLine("Cannot proceed to Content.ExecuteSimple example because of configuration errors");
+            errors.ForEach(e => Console.WriteLine($"Error: {e}"));
+
+            return false;
+        }
+
+        private static IEnumerable<string> EvaluateConfigValidationRulesForOrdinarySample()
+        {
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+
+            if (string.IsNullOrWhiteSpace(localFilePath))
             {
-                createFolder();
-                uploadFile();
-                downloadFile();
-                removeFile();
-                removeFolder();
-                changeOwnerOfSyncpoint(ConfigurationHelper.NewSyncpointOwnerEmail);
+                yield return "uploadFileSmall is not specified";
             }
-        }
-
-        public static void executeObo()
-        {
-            if (APIContext.HasStorageEndpoint && onBehalOfPrepare())
+            else
             {
-                createFolder();
-                uploadFile();
-                downloadFile();
-                removeFile();
-                removeFolder();
+                if (!System.IO.File.Exists(localFilePath))
+                {
+                    yield return
+                        $"Cannot find file '{localFilePath}'. Please check that the file exists and the process has access to it";
+                }
             }
+
+            if (string.IsNullOrWhiteSpace(ConfigurationHelper.DownloadFolder)) yield return "downloadDirectory is not specified";
         }
 
-        private static void removeFolder()
+        private static bool ValidateConfigurationForChunkedSample()
         {
-            SyncService.RemoveFolder(currentFolder.SyncpointId, currentFolder.FolderId, false);
+            var errors = EvaluateConfigValidationRulesForChunkedSample().ToList();
+            if (!errors.Any()) return true;
+
+            Console.WriteLine("Cannot proceed to Content.ExecuteChunked example because of configuration errors");
+            errors.ForEach(e => Console.WriteLine($"Error: {e}"));
+
+            return false;
         }
 
-        private static void removeFile()
+        private static IEnumerable<string> EvaluateConfigValidationRulesForChunkedSample()
         {
-            var fileToRemove = GetCurrentFile();
+            var localFilePath = ConfigurationHelper.UploadFileLarge;
+
+            if (string.IsNullOrWhiteSpace(localFilePath))
+            {
+                yield return "uploadFileLarge is not specified";
+            }
+            else
+            {
+                if (!System.IO.File.Exists(localFilePath))
+                {
+                    yield return
+                        $"Cannot find file '{localFilePath}'. Please check that the file exists and the process has access to it";
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(ConfigurationHelper.DownloadFolder)) yield return "downloadDirectory is not specified";
+        }
+
+        private static void RemoveFolder()
+        {
+            SyncService.RemoveFolder(_currentFolder.SyncpointId, _currentFolder.FolderId, false);
+        }
+
+        private static void RemoveFile(string localFilePath)
+        {
+            var fileToRemove = GetCurrentFile(localFilePath);
             SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, false);
         }
 
-        private static void downloadFile()
+        private static void DownloadFile(string localFilePath)
         {
-            var fileToDownload = GetCurrentFile();
+            var fileToDownload = GetCurrentFile(localFilePath);
 
             Console.WriteLine();
             Console.WriteLine("Start File Downloading...");
 
-            DownloadClient downloadClient = new DownloadClient();
+            var downloadClient = new DownloadClient();
 
             Console.WriteLine();
 
             try
             {
-                if (downloadClient.DownloadFile(fileToDownload, ConfigurationHelper.DownloadFolder))
-                {
-                    Console.WriteLine("Download of {0} to {1} is complete.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder);
-                }
-                else
-                {
-                    Console.WriteLine("Download of {0} to {1} is failed.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder);
-                }
+                var downloadSucceeded = downloadClient.DownloadFileSimple(fileToDownload, ConfigurationHelper.DownloadFolder);
+                Console.WriteLine("Download of {0} to {1} is {2}.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder, downloadSucceeded ? "succeeded" : "failed");
             }
             catch (Exception e)
             {
                 Console.WriteLine("Download of {0} to {1} is failed.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder);
                 Console.WriteLine("Exception caught:");
                 Console.WriteLine(e);
+
+                throw;
             }
 
         }
 
-        private static File GetCurrentFile()
+        private static File GetCurrentFile(string localFilePath)
         {
-            if (currentFile != null)
-            {
-                return currentFile;
-            }
             //refresh folder info
-            currentFolder = SyncService.GetFolder(currentSyncpoint.Id, currentFolder.FolderId);
-            currentFile =
-                currentFolder.Files.First(x => x.Filename == Path.GetFileName(ConfigurationHelper.UploadFile));
+            _currentFolder = SyncService.GetFolder(_currentSyncpoint.Id, _currentFolder.FolderId);
+            var currentFile =
+                _currentFolder.Files.First(x => x.Filename == Path.GetFileName(localFilePath));
             return currentFile;
         }
 
-        private static bool onBehalOfPrepare()
+        private static bool OnBehalfOfPrepare()
         {
             if (string.IsNullOrEmpty(ConfigurationHelper.AsUserEmail))
             {
@@ -128,92 +223,88 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine("Start OnBehalfOf Requests...");
 
             var user = UsersService.GetUser(ConfigurationHelper.AsUserEmail);
-            createSyncpointInternal(user, true);
+            CreateSyncpointInternal(user, true);
 
-            return true;
+            return ApiContext.HasStorageEndpoint;
         }
 
-        private static void createSyncpoint()
+        private static void CreateSyncpoint()
         {
             Console.WriteLine();
             Console.WriteLine("Start Common Requests...");
 
             var user = UsersService.GetUser(ConfigurationHelper.OwnerEmail);
-            createSyncpointInternal(user);
+            CreateSyncpointInternal(user);
         }
 
-        private static void createSyncpointInternal(User user, bool isObo = false)
+        private static void CreateSyncpointInternal(User user, bool isObo = false)
         {
             Console.WriteLine();
             Console.WriteLine("Start SyncPoint Creation...");
 
             //get storage endpoint of current user need admin rights
-            var storageEndpoint = StorageEndpointsService.GetStorageEndpoint(user.Id);
+            var storageEndpoint = StorageEndpointsService.GetStorageEndpointByUser(user.Id);
 
             if (storageEndpoint == null)
             {
                 Console.WriteLine();
                 Console.WriteLine(
-                    "Unable to determine the user's storage endpoint.  Content apis will not be able to proceed.");
+                    "Unable to determine the user's storage endpoint.  Content APIs will not be able to proceed.");
                 return;
             }
-            APIContext.HasStorageEndpoint = true;
+            ApiContext.HasStorageEndpoint = true;
             if (isObo)
-                APIContext.OnBehalfOfUser = user.Id;
+                ApiContext.OnBehalfOfUser = user.Id;
 
-            Random random = new Random();
-            SyncPoint newSyncPoint = new SyncPoint()
+            var random = new Random();
+            var newSyncPoint = new SyncPoint
             {
                 Name = ConfigurationHelper.SyncpointName + random.Next(),
                 Type = SyncPointType.Custom,
-                Path = "C:\\Synplicity",
+                Path = "C:\\Syncplicity",
                 StorageEndpointId = storageEndpoint.Id,
                 Mapped = true,
                 DownloadEnabled = true,
                 UploadEnabled = true
             };
 
-            SyncPoint[] createdSyncPoints = SyncPointsService.CreateSyncpoints(new SyncPoint[] { newSyncPoint });
+            var createdSyncPoints = SyncPointsService.CreateSyncpoints(new[] { newSyncPoint });
 
             Console.WriteLine();
 
             if (createdSyncPoints == null || createdSyncPoints.Length == 0)
             {
-                Console.WriteLine("Error occured during creating SyncPoint.");
+                Console.WriteLine("Error occurred during creating SyncPoint.");
                 return;
             }
-            else
-            {
-                //currentSyncpoint = createdSyncPoints[0];
 
-                //Need to call getSyncPoint to hydrate all the meta data of the syncpoint, in particular
-                //we need RootFolderId so that we can create a folder next.
-                currentSyncpoint = SyncPointsService.GetSyncpoint(createdSyncPoints[0].Id);
-            }
+            //Need to call getSyncPoint to hydrate all the meta data of the syncpoint, in particular
+            //we need RootFolderId so that we can create a folder next.
+            _currentSyncpoint = SyncPointsService.GetSyncpoint(createdSyncPoints[0].Id);
 
             //map syncpoint to device
             if (ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled)
             {
-                Console.WriteLine("Mapping the syncpoint {0} to machine {1}", currentSyncpoint.Id,
+                Console.WriteLine("Mapping the syncpoint {0} to machine {1}", _currentSyncpoint.Id,
                     ConfigurationHelper.MachineId);
-                currentSyncpoint.Mappings = new Mapping[]
+                _currentSyncpoint.Mappings = new[]
                 {
-                    new Mapping()
+                    new Mapping
                     {
-                        SyncPointId = currentSyncpoint.Id,
+                        SyncPointId = _currentSyncpoint.Id,
                         Mapped = true,
-                        Machine = new Machine() {Id = ConfigurationHelper.MachineId}
+                        Machine = new Machine {Id = ConfigurationHelper.MachineId}
                     }
                 };
-                currentSyncpoint = SyncPointsService.PutSyncpoint(currentSyncpoint);
+                _currentSyncpoint = SyncPointsService.PutSyncpoint(_currentSyncpoint);
             }
 
-            Console.WriteLine("Finished SyncPoint Creation. Created new SyncPoint {0} with Id: {1}", currentSyncpoint.Name, currentSyncpoint.Id);
+            Console.WriteLine("Finished SyncPoint Creation. Created new SyncPoint {0} with Id: {1}", _currentSyncpoint.Name, _currentSyncpoint.Id);
         }
 
-        public static void createFolder()
+        public static void CreateFolder()
         {
-            if (currentSyncpoint == null)
+            if (_currentSyncpoint == null)
             {
                 return;
             }
@@ -221,47 +312,44 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine();
             Console.WriteLine("Start Folder Creation...");
 
-            long syncpointId = currentSyncpoint.Id;            // internal integer id of syncpoint
+            var syncpointId = _currentSyncpoint.Id;            // internal integer id of syncpoint
 
-            Random random = new Random();
-            Folder newFolder = new Folder()
+            var random = new Random();
+            var newFolder = new Folder
             {
-                VirtualPath = string.Format(@"\{0}{1}\", ConfigurationHelper.FolderName, random.Next()),
+                VirtualPath = $@"\{ConfigurationHelper.FolderName}{random.Next()}\",
                 Status = FolderStatus.Added,
                 SyncpointId = syncpointId
             };
 
-            Folder[] createdFolders = SyncService.CreateFolders(syncpointId, new [] { newFolder });
+            var createdFolders = SyncService.CreateFolders(syncpointId, new [] { newFolder });
 
             Console.WriteLine();
 
             if (createdFolders == null || createdFolders.Length == 0)
             {
-                Console.WriteLine("Error occured during creating new folder. Content apis will not be able to continue.");
+                Console.WriteLine("Error occurred during creating new folder. Content APIs will not be able to continue.");
                 return;
             }
-            else
-            {
-                currentFolder = createdFolders[0];
-            }
+            
+            _currentFolder = createdFolders[0];
 
-            Console.WriteLine(String.Format("Finished Folder Creation. Created new Folder {0} with Id: {1}", createdFolders[0].Name, createdFolders[0].FolderId));
+            Console.WriteLine(
+                $"Finished Folder Creation. Created new Folder {createdFolders[0].Name} with Id: {createdFolders[0].FolderId}");
         }
 
-        private static void uploadFile()
+        private static void UploadFile(string localFilePath, UploadMode mode)
         {
-            if (currentFolder == null)
+            if (_currentFolder == null)
             {
                 return;
             }
-
-            String localFileName = ConfigurationHelper.UploadFile;
 
             Console.WriteLine();
 
-            if (!(new FileInfo(localFileName)).Exists)
+            if (!System.IO.File.Exists(localFilePath))
             {
-                Console.WriteLine("Unable to find local file {0}.  Content apis will not be able to continue.", localFileName);
+                Console.WriteLine("Unable to find local file {0}.  Content APIs will not be able to continue.", localFilePath);
                 throw new ConfigurationErrorsException("Cannot find the file defined as the value of \"uploadFile\" configuration");
             }
 
@@ -269,8 +357,19 @@ namespace CSharpSampleApp.Examples
 
             try
             {
-                new UploadClient(currentFolder, localFileName, string.Empty, UploadCallBack).UploadFile();
-                _uploadFinished.WaitOne();
+                var uploadClient = new UploadClient(_currentFolder, localFilePath, UploadCallBack);
+                switch (mode)
+                {
+                    case UploadMode.Chunked:
+                        uploadClient.UploadFileUsingChunks();
+                        break;
+                    case UploadMode.Simple:
+                    default:
+                        uploadClient.UploadFileWithoutChunking();
+                        break;
+                }
+
+                UploadFinished.WaitOne();
             }
             catch (Exception e)
             {
@@ -278,7 +377,7 @@ namespace CSharpSampleApp.Examples
                 Console.WriteLine("Uploading file failed.");
                 Console.WriteLine("Exception caught:");
                 Console.WriteLine(e);
-                _uploadFinished.Set();
+                UploadFinished.Set();
                 throw;
             }
 
@@ -287,10 +386,10 @@ namespace CSharpSampleApp.Examples
             if (_lastException != null)
             {
                 Console.WriteLine("Uploading file failed.");
-                throw _lastException;
+                throw new InvalidOperationException("Uploading file failed", _lastException);
             }
 
-            Console.WriteLine("File {0} uploaded successfully to folder {1}.", localFileName, currentFolder.Name);
+            Console.WriteLine("File {0} uploaded successfully to folder {1}.", localFilePath, _currentFolder.Name);
         }
         private static void UploadCallBack(IAsyncResult result)
         {
@@ -314,13 +413,13 @@ namespace CSharpSampleApp.Examples
             finally
             {
                 //Must set this, otherwise, hangs when uploadFinished.WaitOne() is called. 
-                _uploadFinished.Set();
+                UploadFinished.Set();
             }
         }
 
-        private static void changeOwnerOfSyncpoint(string newOwnerEmail)
+        private static void ChangeOwnerOfSyncpoint(string newOwnerEmail)
         {
-            if (string.IsNullOrEmpty(newOwnerEmail) || newOwnerEmail == "REPLACE_WITH_NEW_SYNCPOINT_OWNER_EMAIL")
+            if (string.IsNullOrEmpty(newOwnerEmail))
             {
                 Console.WriteLine();
                 Console.WriteLine("New owner is not defined - skipping change syncpoint's owner");
@@ -330,13 +429,19 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine();
             Console.WriteLine("Start changing the owner of syncpoint...");
 
-            oldOwner = currentSyncpoint.Owner;
-            currentSyncpoint.Owner = new User() {EmailAddress = newOwnerEmail };
-            currentSyncpoint = SyncPointsService.PutSyncpoint(currentSyncpoint);
-            ParticipantsService.RemoveParticipants(currentSyncpoint.Id, oldOwner.EmailAddress);
+            _oldOwner = _currentSyncpoint.Owner;
+            _currentSyncpoint.Owner = new User {EmailAddress = newOwnerEmail };
+            _currentSyncpoint = SyncPointsService.PutSyncpoint(_currentSyncpoint);
+            ParticipantsService.RemoveParticipants(_currentSyncpoint.Id, _oldOwner.EmailAddress);
 
             Console.WriteLine();
             Console.WriteLine("Owner of syncpoint has been changed...");
+        }
+
+        private enum UploadMode
+        {
+            Simple,
+            Chunked
         }
     }
 }
