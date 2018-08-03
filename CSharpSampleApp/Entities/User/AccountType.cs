@@ -8,7 +8,9 @@ namespace CSharpSampleApp.Entities
     [DataContract(Namespace = "")]
     public enum AccountType : byte
     {
-        // A type wasn't provided.
+        /// <summary>
+        /// A type wasn't provided.
+        /// </summary>
         [EnumMember]
         Unknown = 0,
 

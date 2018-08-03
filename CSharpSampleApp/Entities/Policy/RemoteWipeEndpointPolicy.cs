@@ -5,7 +5,7 @@ namespace CSharpSampleApp.Entities
     [DataContract(Namespace = "")]
     public enum RemoteWipeEndpointPolicy : byte
     {
-        // <summary>
+        /// <summary>
         /// Default value
         /// </summary>
         [EnumMember]

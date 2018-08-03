@@ -74,7 +74,7 @@ namespace CSharpSampleApp.Entities
 
         public override string ToString()
         {
-            return string.Format("Syncpoint: Name: '{0}', Id: {1}", Name, Id);
+            return $"Syncpoint: Name: '{Name}', Id: {Id}";
         }
     }
 }

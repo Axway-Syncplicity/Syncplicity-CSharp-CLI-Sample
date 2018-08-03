@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using CSharpSampleApp.Entities;
 
 namespace CSharpSampleApp.Services
@@ -7,11 +6,11 @@ namespace CSharpSampleApp.Services
     /// <summary>
     /// Class for requests to syncpoint_participants.svc and syncpoint_participants.svc
     /// </summary>
-    public class ParticipantsService : APIGateway
+    public class ParticipantsService : ApiGateway
     {
         #region Variables
 
-        private static string _ParticipantsUrl = SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
+        private static readonly string _ParticipantsUrl = SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
 
         #endregion Variables
 
@@ -19,8 +18,8 @@ namespace CSharpSampleApp.Services
 
         public static void RemoveParticipants(long syncpointId, params string[] emails)
         {
-            var participants = emails.Select(x => new Participant() {User = new User() {EmailAddress = x}}).ToArray();
-            HttpDelete<string>(String.Format(_ParticipantsUrl, syncpointId), participants);
+            var participants = emails.Select(x => new Participant {User = new User {EmailAddress = x}}).ToArray();
+            HttpDelete<string>(string.Format(_ParticipantsUrl, syncpointId), participants);
         }
 
         #endregion Methods

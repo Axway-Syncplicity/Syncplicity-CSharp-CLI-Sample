@@ -52,20 +52,15 @@
     <Reference Include="JsonPrettyPrinterPlus">
       <HintPath>..\packages\JsonPrettyPrinter.1.0.1.1\lib\net35\JsonPrettyPrinterPlus.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Program Files (x86)\Microsoft Visual Studio 12.0\Blend\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -155,7 +150,7 @@
     <Compile Include="Entities\Syncpoint\SyncPoint.cs" />
     <Compile Include="Entities\Syncpoint\SyncPointPolicy.cs" />
     <Compile Include="Entities\Syncpoint\SyncPointType.cs" />
-    <Compile Include="Entities\User\AccountStatus.cs" />	
+    <Compile Include="Entities\User\AccountStatus.cs" />
     <Compile Include="Entities\User\AccountType.cs" />
     <Compile Include="Entities\User\User.cs" />
     <Compile Include="Examples\CrossRolExample.cs" />
@@ -165,30 +160,36 @@
     <Compile Include="OAuth\TokenResponse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\APIContext.cs" />
-    <Compile Include="Services\APIGateway.cs" />
-    <Compile Include="Services\GOLGateway.cs" />
+    <Compile Include="Services\ApiContext.cs" />
+    <Compile Include="Services\ApiGateway.cs" />
+    <Compile Include="Services\GolGateway.cs" />
     <Compile Include="Services\Download\DownloadClient.cs" />
     <Compile Include="Services\FoldersService.cs" />
     <Compile Include="Services\GrantType.cs" />
     <Compile Include="Services\GroupMembersService.cs" />
     <Compile Include="Services\ParticipantsService.cs" />
-    <Compile Include="Services\GroupsService.cs" />    
-    <Compile Include="Services\UserPIIService.cs" />
+    <Compile Include="Services\GroupsService.cs" />
+    <Compile Include="Services\UserPiiService.cs" />
     <Compile Include="Services\StorageEndpointsService.cs" />
     <Compile Include="Services\SyncPointsService.cs" />
     <Compile Include="Services\SyncService.cs" />
     <Compile Include="Services\Upload\UploadClient.cs" />
-    <Compile Include="Services\Upload\UploadClientSettings.cs" />
     <Compile Include="Services\UsersService.cs" />
     <Compile Include="Util\ConfigurationHelper.cs" />
     <Compile Include="Util\Serialization.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\SmallFile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+    <Content Include="Resources\10MB.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\Readme.md" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
@@ -208,19 +209,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Newtonsoft.Json.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

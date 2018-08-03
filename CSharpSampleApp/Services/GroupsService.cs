@@ -7,25 +7,19 @@ namespace CSharpSampleApp.Services
     /// <summary>
     /// Class for requests to group.svc and groups.svc
     /// </summary>
-    public class GroupsService: APIGateway
+    public class GroupsService: ApiGateway
     {
         #region Variables
 
         /// <summary>
         /// Gets or sets url to GroupMembers service.
         /// </summary>
-        protected static string GroupsUrl 
-        { 
-            get { return ProvisioningAPIUrlPrefix + "groups.svc/{0}/groups"; }
-        }
+        protected static string GroupsUrl => ProvisioningAPIUrlPrefix + "groups.svc/{0}/groups";
 
         /// <summary>
         /// Gets or sets url to GroupMember service.
         /// </summary>
-        protected static string GroupUrl 
-        {
-            get { return ProvisioningAPIUrlPrefix + "group.svc/{0}"; }
-        }
+        protected static string GroupUrl => ProvisioningAPIUrlPrefix + "group.svc/{0}";
 
         #endregion Variables
 
@@ -50,10 +44,10 @@ namespace CSharpSampleApp.Services
         /// <returns>Array of company groups.</returns>
         public static Group[] GetGroups(Guid companyGuid, string include = null)
         {
-            string uri = string.Format(GroupsUrl, companyGuid);
-            if (!String.IsNullOrEmpty(include))
+            var uri = string.Format(GroupsUrl, companyGuid);
+            if (!string.IsNullOrEmpty(include))
             {
-                uri = String.Format("{0}?include={1}", uri, include);
+                uri = $"{uri}?include={include}";
             }
 
             return HttpGet<Group[]>(uri);

@@ -11,60 +11,109 @@ namespace CSharpSampleApp.Services.Download
 {
     public class DownloadClient
     {
-        const int MAX_BUFFER_SIZE = 8 * 1024;
-        const int RESPONSE_TIMEOUT_MILLISECONDS = 60 * 60 * 1000;
-        const string DOWNLOAD_ULR_FORMAT = "{0}/retrieveFile.php";
-        const string SESSION_KEY_FORMAT = "Bearer {0}";
+        private const int MaxBufferSize = 8 * 1024;
+        private const int ResponseTimeoutMilliseconds = 60 * 60 * 1000;
+        private const string DownloadUlrFormat = "{0}/retrieveFile.php";
+        private const string SessionKeyFormat = "Bearer {0}";
 
-        readonly byte[] _data = new byte[MAX_BUFFER_SIZE];
+        private readonly byte[] _data = new byte[MaxBufferSize];
 
-        private bool    _maxBytesPerSecondChanged;
         private string  _downloadUrl;
         private long     _syncpointId;
         private long     _latestVersionId;
         private string  _sessionKey;
 
-        public bool DownloadFile(Entities.File file, string localFilepath)
+        public bool DownloadFileSimple(Entities.File file, string downloadFolder)
         {
-            string combinedFileName = Path.Combine(localFilepath, file.Filename);
-            if (File.Exists(combinedFileName))
-            {
-                // Set it back to normal so we can append to it
-                File.SetAttributes(combinedFileName, FileAttributes.Normal);
-            }
+            var combinedFileName = Path.Combine(downloadFolder, file.Filename);
+            PrepareDownloadFolder(downloadFolder, combinedFileName);
 
             Initialize(file);
 
-            using (var fileStream = new FileStream(combinedFileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None, MAX_BUFFER_SIZE, FileOptions.SequentialScan))
+            using (var fileStream = OpenFileForDownload(combinedFileName))
             {
-                File.SetAttributes(combinedFileName, FileAttributes.Temporary | FileAttributes.NotContentIndexed);
-                HttpWebRequest request = CreateWebRequest(_downloadUrl, _sessionKey, _syncpointId, _latestVersionId, fileStream.Length);
-
-                fileStream.Seek(fileStream.Length, SeekOrigin.Begin);
-
                 try
                 {
-                    using (var response = (HttpWebResponse) request.GetResponse())
-                    {
-                        DownloadFileFromResponse(response, fileStream);
-                    }
+                    DownloadChunk(fileStream);
 
                     return true;
                 }
-                catch (WebException e)
+                catch
                 {
-                    var response = (HttpWebResponse) e.Response;
-                    if (response != null)
-                    {
-                        Console.WriteLine("Exception caught during UploadCallback: Status Code: {0}, Status Description: {1} ", (int)response.StatusCode, response.StatusDescription);
-                    }
-
                     fileStream.Close();
                     File.Delete(combinedFileName);
 
                     return false;
                 }
             }
+        }
+
+        private static void PrepareDownloadFolder(string downloadFolder, string combinedFileName)
+        {
+            EnsureFolderExists(downloadFolder);
+
+            if (File.Exists(combinedFileName))
+            {
+                // Delete existing file, otherwise sample does nothing.
+                // It would try to resume download from the end, but since we have the whole file,
+                // resuming is no-op and returns no content from server
+                File.Delete(combinedFileName);
+            }
+        }
+
+        private static FileStream OpenFileForDownload(string fileName)
+        {
+            FileStream fileStream = null;
+
+            try
+            {
+                fileStream = new FileStream(fileName, FileMode.OpenOrCreate, FileAccess.Write, FileShare.None,
+                    MaxBufferSize, FileOptions.SequentialScan);
+
+                File.SetAttributes(fileName, FileAttributes.Temporary | FileAttributes.NotContentIndexed);
+
+                return fileStream;
+            }
+            catch
+            {
+                fileStream?.Dispose();
+
+                throw;
+            }
+        }
+
+        private void DownloadChunk(FileStream fileStream)
+        {
+            const int startByte = 0;
+            fileStream.Seek(startByte, SeekOrigin.Begin);
+
+            var request = CreateWebRequest(_downloadUrl, _sessionKey, _syncpointId, _latestVersionId, startByte);
+            try
+            {
+                using (var response = (HttpWebResponse) request.GetResponse())
+                {
+                    DownloadFileFromResponse(response, fileStream);
+                }
+            }
+            catch (WebException e)
+            {
+                var response = (HttpWebResponse) e.Response;
+                if (response != null)
+                {
+                    Console.WriteLine(
+                        "Exception caught during DownloadChunk: Status Code: {0}, Status Description: {1} ",
+                        (int) response.StatusCode, response.StatusDescription);
+                }
+
+                throw;
+            }
+        }
+
+        private static void EnsureFolderExists(string downloadFolder)
+        {
+            if (Directory.Exists(downloadFolder)) return;
+
+            Directory.CreateDirectory(downloadFolder);
         }
 
         private void Initialize(Entities.File file)
@@ -80,16 +129,16 @@ namespace CSharpSampleApp.Services.Download
             var storageEndpoint = storageEndpoints.First(x => x.Id == syncpoint.StorageEndpointId);
 
             if (storageEndpoint.Urls == null || storageEndpoint.Urls.Length == 0)
-                throw new ArgumentException("Invalid StorageEnpodin Urls");
+                throw new ArgumentException("Invalid StorageEndpoint Urls");
 
-            _downloadUrl = string.Format(DOWNLOAD_ULR_FORMAT, storageEndpoint.Urls[0].Url);
-            _sessionKey = string.Format(SESSION_KEY_FORMAT,
+            _downloadUrl = string.Format(DownloadUlrFormat, storageEndpoint.Urls[0].Url);
+            _sessionKey = string.Format(SessionKeyFormat,
                 ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled
-                    ? APIContext.MachineToken
-                    : APIContext.AccessToken);
+                    ? ApiContext.MachineToken
+                    : ApiContext.AccessToken);
 
-            Debug.WriteLine(string.Format("Download Url: {0}", _downloadUrl));
-            Debug.WriteLine(string.Format("Session Key: {0}", _sessionKey));
+            Debug.WriteLine($"Download Url: {_downloadUrl}");
+            Debug.WriteLine($"Session Key: {_sessionKey}");
 
             Console.WriteLine("Download Url: {0}", _downloadUrl);
             Console.WriteLine("Session Key: {0}", _sessionKey);
@@ -100,13 +149,13 @@ namespace CSharpSampleApp.Services.Download
         /// </summary>
         private void DownloadFileFromResponse(HttpWebResponse response, FileStream fileStream)
         {
-            using (Stream responseStream = response.GetResponseStream())
+            using (var responseStream = response.GetResponseStream())
             {
                 if (response.StatusCode != HttpStatusCode.OK &&
                     response.StatusCode != HttpStatusCode.PartialContent)
                 {
                     var reader = new StreamReader(responseStream);
-                    string responseError = reader.ReadToEnd();
+                    var responseError = reader.ReadToEnd();
 
                     Debug.WriteLine(responseError);
 
@@ -114,82 +163,62 @@ namespace CSharpSampleApp.Services.Download
                 }
 
                 // Start reading the file
-                using (Stream stream = responseStream)
+                do
                 {
-                    int bufferSize = MAX_BUFFER_SIZE;
+                    var bytesRead = responseStream.Read(_data, 0, MaxBufferSize);
 
-                    var stopwatch = new Stopwatch();
-                    do
+                    if (bytesRead == 0)
                     {
-                        if (_maxBytesPerSecondChanged)
-                        {
-                            _maxBytesPerSecondChanged = false;
+                        break;
+                    }
 
-                            bufferSize = MAX_BUFFER_SIZE;
-                        }
-
-                        stopwatch.Start();
-                        int bytesRead = stream.Read(_data, 0, bufferSize);
-
-                        if (bytesRead == 0)
-                        {
-                            break;
-                        }
-
-                        fileStream.Write(_data, 0, bytesRead);
-                        stopwatch.Stop();
-
-                        stopwatch.Reset();
-                    } 
-                    while (true);
-                }
+                    fileStream.Write(_data, 0, bytesRead);
+                } 
+                while (true);
             }
         }
 
-        HttpWebRequest CreateWebRequest(string downloadUrl, string sessionKey, long syncpointId, long latestVersionId, long startByte)
+        private HttpWebRequest CreateWebRequest(string downloadUrl, string sessionKey, long syncpointId, long latestVersionId, long startByte)
         {
-            string requestUrl = String.Format
-                (
-                    "{0}?vToken={1}",
-                    downloadUrl,
-                    HttpUtility.UrlEncode(String.Format("{0}-{1}", syncpointId, latestVersionId))
-                );
+            var requestUrl =
+                $"{downloadUrl}?vToken={HttpUtility.UrlEncode($"{syncpointId}-{latestVersionId}")}";
 
             var request = (HttpWebRequest) WebRequest.Create(requestUrl);
 
-            request.Timeout = RESPONSE_TIMEOUT_MILLISECONDS;
+            request.Timeout = ResponseTimeoutMilliseconds;
             request.KeepAlive = true;
             request.Method = "GET";
             request.UserAgent = "Syncplicity Client";
             request.Headers.Add("AppKey", ConfigurationHelper.ApplicationKey);
             request.Headers.Add(HttpRequestHeader.Authorization, sessionKey);
+
             if (ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled)
             {
                 request.Headers.Add("Syncplicity-Storage-Authorization", ConfigurationHelper.StorageToken);
             }
-            if (APIContext.OnBehalfOfUser.HasValue)
+
+            if (ApiContext.OnBehalfOfUser.HasValue)
             {
-                request.Headers.Add("As-User", APIContext.OnBehalfOfUser.Value.ToString("D"));
+                request.Headers.Add("As-User", ApiContext.OnBehalfOfUser.Value.ToString("D"));
             }
-            request.ServerCertificateValidationCallback += (sender, certificate, chain, errors) => true;
+
+            request.ServerCertificateValidationCallback += (sender, certificate, chain, errors) =>
+            {
+                /*
+                 * SECURITY WARNING!
+                 * DO NOT reproduce this in production code.
+                 * This means disabling server SSL certificate validation errors,
+                 * which in turn makes the code vulnerable to man-in-the-middle attacks.
+                 */
+                return true;
+            };
 
             if (startByte > 0)
             {
-                MethodInfos.AddWithoutValidate.Invoke(request.Headers, new object[] { "Range", String.Format("bytes={0}-", startByte) });
+                request.AddRange(startByte);
             }
 
             return request;
         }
-
-        internal static class MethodInfos
-        {
-            public static readonly MethodInfo AddWithoutValidate;
-
-            static MethodInfos()
-            {
-                AddWithoutValidate = typeof(WebHeaderCollection).GetMethod("AddWithoutValidate", BindingFlags.Instance | BindingFlags.NonPublic);
-            }
-        }
-
     }
 }

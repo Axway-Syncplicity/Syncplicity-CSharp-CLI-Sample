@@ -5,12 +5,12 @@
     /// </summary>
     public enum ShareLinkPasswordComplexity
     {
-        // <summary>
+        /// <summary>
         /// Default value
         /// </summary>
         Unknown = 0,
         /// <summary>
-        /// Password need to be of configirable length and can contain anything
+        /// Password need to be of configurable length and can contain anything
         /// </summary>
         Default = 1,
         /// <summary>

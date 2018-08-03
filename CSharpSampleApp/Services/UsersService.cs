@@ -1,12 +1,11 @@
 ﻿using CSharpSampleApp.Entities;
-using CSharpSampleApp.Services;
 
 namespace CSharpSampleApp.Services
 {
     /// <summary>
     /// Class for requests to users.svc, users_public.svc and user.svc
     /// </summary>
-    public class UsersService : APIGateway
+    public class UsersService : ApiGateway
     {
 
         #region Static Members
@@ -14,26 +13,17 @@ namespace CSharpSampleApp.Services
         /// <summary>
         /// Gets url to GroupMembers service.
         /// </summary>
-        protected static string UsersUrl
-        {
-            get { return ProvisioningAPIUrlPrefix + "users.svc/"; }
-        }
+        protected static string UsersUrl => ProvisioningAPIUrlPrefix + "users.svc/";
 
         /// <summary>
         /// Gets url to GroupMembers service.
         /// </summary>
-        protected static string UserUrl
-        {
-            get { return ProvisioningAPIUrlPrefix + "user.svc/{0}"; }
-        }
+        protected static string UserUrl => ProvisioningAPIUrlPrefix + "user.svc/{0}";
 
         /// <summary>
         /// Gets url to GroupMember service.
         /// </summary>
-        protected static string UsersPublicUrl
-        {
-            get { return ProvisioningAPIUrlPrefix + "users_public.svc/"; }
-        }
+        protected static string UsersPublicUrl => ProvisioningAPIUrlPrefix + "users_public.svc/";
 
         #endregion Static Members
 
@@ -42,7 +32,7 @@ namespace CSharpSampleApp.Services
         /// <summary>
         /// Retrieve a user from the company, if it exists.
         /// </summary>
-        /// <param name="users">Email of the user.</param>
+        /// <param name="email">Email of the user.</param>
         /// <returns>Populated User object of the related user.</returns>
         public static User GetUser(string email)
         {

@@ -5,7 +5,7 @@ namespace CSharpSampleApp.Entities
     [DataContract(Namespace = "")]
     public enum BranchingPolicy : byte
     {
-        // <summary>
+        /// <summary>
         /// Default value
         /// </summary>
         [EnumMember]

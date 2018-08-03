@@ -8,7 +8,7 @@ namespace CSharpSampleApp.Entities
     [DataContract(Namespace = "")]
     public enum CachedPasswordExpirationPolicy
     {
-        // <summary>
+        /// <summary>
         /// Default value
         ///</summary>
         [EnumMember]

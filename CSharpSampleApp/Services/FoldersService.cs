@@ -5,19 +5,14 @@ namespace CSharpSampleApp.Services
     /// <summary>
     /// Class for requests to folder.svc
     /// </summary>
-    public class FoldersService : APIGateway
+    public class FoldersService : ApiGateway
     {
         #region Static Members
-
-        private static string _FolderUrl = SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
 
         /// <summary>
         /// Gets url to Folder service.
         /// </summary>
-        protected static string FolderUrl
-        {
-            get { return _FolderUrl; }
-        }
+        protected static string FolderUrl { get; } = SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
 
         #endregion Static Members
 
@@ -32,10 +27,10 @@ namespace CSharpSampleApp.Services
         /// <returns>Folder info.</returns>
         public static Folder GetFolder(int syncpointId, int folderId, string include = "active")
         {
-            string url = string.Format(FolderUrl, syncpointId, folderId);
+            var url = string.Format(FolderUrl, syncpointId, folderId);
             if (!string.IsNullOrEmpty(include))
             {
-                url += string.Format("?include={0}", include);
+                url += $"?include={include}";
             }
             return HttpGet<Folder>(url);
         }
