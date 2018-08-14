@@ -187,12 +187,12 @@ namespace CSharpSampleApp.Examples
 
             try
             {
-                var downloadSucceeded = downloadClient.DownloadFileSimple(fileToDownload, ConfigurationHelper.DownloadFolder);
-                Console.WriteLine("Download of {0} to {1} is {2}.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder, downloadSucceeded ? "succeeded" : "failed");
+                downloadClient.DownloadFileSimple(fileToDownload, ConfigurationHelper.DownloadFolder);
+                Console.WriteLine("Download of {0} to {1} succeeded.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder);
             }
             catch (Exception e)
             {
-                Console.WriteLine("Download of {0} to {1} is failed.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder);
+                Console.WriteLine("Download of {0} to {1} failed.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder);
                 Console.WriteLine("Exception caught:");
                 Console.WriteLine(e);
 

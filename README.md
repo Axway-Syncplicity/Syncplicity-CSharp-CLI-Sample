@@ -63,11 +63,18 @@ This sample application demonstrates usage of Syncplicity APIs. This is what you
 5. Build the solution.
 6. Run the application.
 
+### Debugging with Fiddler
+
+To debug the sample app with Fiddler, one needs to make Fiddler SSL certificates trusted by the application.
+The easiest way is by adding Fiddler's certificate to Trusted Root CA list.
+To do this in Fiddler, go to Tools -> Options -> HTTPS -> Actions -> Trust Root Certificate.
+Accept Fiddler warnings, reading carefully what they say.
+
 ## Team
 
 ![alt text][Axwaylogo] Axway Syncplicity Team
 
-[Axwaylogo]: https://github.com/Axway-API-Management/Common/blob/master/img/AxwayLogoSmall.png  "Axway logo"
+[Axwaylogo]: https://github.com/Axway-syncplicity/Assets/raw/master/AxwayLogoSmall.png  "Axway logo"
 
 ## License
 

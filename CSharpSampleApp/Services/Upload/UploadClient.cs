@@ -14,7 +14,7 @@ namespace CSharpSampleApp.Services.Upload
 {
     public class UploadClient
     {
-        private const string DownloadUlrFormat = "{0}/saveFile.php";
+        private const string DownloadUlrFormat = "{0}/v2/mime/files";
         private const string SessionKeyFormat = "Bearer {0}";
         private const int MaxBufferSize = 8 * 1024;
         private const HttpStatusCode ResumeIncompleteStatusCode = (HttpStatusCode)308;
@@ -215,10 +215,12 @@ namespace CSharpSampleApp.Services.Upload
             {
                 // we've reached the end of the file, time to call our callback
                 Console.WriteLine(@"Uploading file {0} with hash {1} to {2}", _localFilePath, sha256, chunkRequest.Address);
-                Console.WriteLine("ChunkRequest Headers:\\r\\n{0}", chunkRequest.Headers);
+                Console.WriteLine("ChunkRequest Headers:");
+                Console.WriteLine(chunkRequest.Headers);
 
                 Debug.WriteLine("Uploading file {0} with hash {1} to {2}", _localFilePath, sha256, chunkRequest.Address);
-                Debug.WriteLine("ChunkRequest Headers:\\r\\n{0}", chunkRequest.Headers);
+                Debug.WriteLine("ChunkRequest Headers:");
+                Debug.WriteLine(chunkRequest.Headers);
 
                 chunkRequest.BeginGetResponse(_callback, CreateAsyncInfo(chunkRequest));
             }
@@ -261,25 +263,15 @@ namespace CSharpSampleApp.Services.Upload
 
         private HttpWebRequest CreateRequest()
         {
-            var fullUploadUrl = new StringBuilder($"{_uploadUrl}?filepath={HttpUtility.UrlEncode(_virtualPath)}");
+            var fullUploadUrl = $"{_uploadUrl}?filepath={HttpUtility.UrlEncode(_virtualPath)}";
 
-            var request = (HttpWebRequest) WebRequest.Create(fullUploadUrl.ToString());
+            var request = (HttpWebRequest) WebRequest.Create(fullUploadUrl);
 
             request.KeepAlive = true;
             request.Timeout = int.MaxValue;
             request.Method = "POST";
-            request.UserAgent = "Syncplicity Client";
+            request.UserAgent = "Syncplicity C# CLI Sample Application";
             request.Headers.Add("AppKey", ConfigurationHelper.ApplicationKey);
-            request.ServerCertificateValidationCallback += (sender, certificate, chain, errors) =>
-            {
-                /*
-                 * SECURITY WARNING!
-                 * DO NOT reproduce this in production code.
-                 * This means disabling server SSL certificate validation errors,
-                 * which in turn makes the code vulnerable to man-in-the-middle attacks.
-                 */
-                return true;
-            };
 
             if (!string.IsNullOrEmpty(_eTag))
             {

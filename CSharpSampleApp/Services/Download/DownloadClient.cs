@@ -13,7 +13,7 @@ namespace CSharpSampleApp.Services.Download
     {
         private const int MaxBufferSize = 8 * 1024;
         private const int ResponseTimeoutMilliseconds = 60 * 60 * 1000;
-        private const string DownloadUlrFormat = "{0}/retrieveFile.php";
+        private const string DownloadUlrFormat = "{0}/v2/files";
         private const string SessionKeyFormat = "Bearer {0}";
 
         private readonly byte[] _data = new byte[MaxBufferSize];
@@ -23,7 +23,7 @@ namespace CSharpSampleApp.Services.Download
         private long     _latestVersionId;
         private string  _sessionKey;
 
-        public bool DownloadFileSimple(Entities.File file, string downloadFolder)
+        public void DownloadFileSimple(Entities.File file, string downloadFolder)
         {
             var combinedFileName = Path.Combine(downloadFolder, file.Filename);
             PrepareDownloadFolder(downloadFolder, combinedFileName);
@@ -35,15 +35,13 @@ namespace CSharpSampleApp.Services.Download
                 try
                 {
                     DownloadChunk(fileStream);
-
-                    return true;
                 }
                 catch
                 {
                     fileStream.Close();
                     File.Delete(combinedFileName);
 
-                    return false;
+                    throw;
                 }
             }
         }
@@ -181,7 +179,7 @@ namespace CSharpSampleApp.Services.Download
         private HttpWebRequest CreateWebRequest(string downloadUrl, string sessionKey, long syncpointId, long latestVersionId, long startByte)
         {
             var requestUrl =
-                $"{downloadUrl}?vToken={HttpUtility.UrlEncode($"{syncpointId}-{latestVersionId}")}";
+                $"{downloadUrl}?syncpoint_id={syncpointId}&file_version_id={latestVersionId}";
 
             var request = (HttpWebRequest) WebRequest.Create(requestUrl);
 
@@ -201,17 +199,6 @@ namespace CSharpSampleApp.Services.Download
             {
                 request.Headers.Add("As-User", ApiContext.OnBehalfOfUser.Value.ToString("D"));
             }
-
-            request.ServerCertificateValidationCallback += (sender, certificate, chain, errors) =>
-            {
-                /*
-                 * SECURITY WARNING!
-                 * DO NOT reproduce this in production code.
-                 * This means disabling server SSL certificate validation errors,
-                 * which in turn makes the code vulnerable to man-in-the-middle attacks.
-                 */
-                return true;
-            };
 
             if (startByte > 0)
             {
