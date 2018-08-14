@@ -31,12 +31,6 @@ namespace CSharpSampleApp.Services
         public static string BaseApiEndpointUrl => CurrentRol.ApigeeUrl;
 
         /// <summary>
-        /// Gets admin token for the home role
-        /// </summary>
-        /// <returns></returns>
-        public static string SyncplicityAdminToken => ConfigurationHelper.GetSyncplicityAdminToken(CurrentRol.Id);
-
-        /// <summary>
         /// Create GET HTTP request to url return deserialized object T.
         /// </summary>
         /// <typeparam name="T">The type of returned object.</typeparam>

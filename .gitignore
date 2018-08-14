@@ -1,0 +1,44 @@
+#OS junk files
+[Tt]humbs.db
+*.DS_Store
+.bak
+
+#Visual Studio files
+*.[Oo]bj
+*.exe
+*.pdb
+*.user
+*.aps
+*.pch
+*.vspscc
+*.vssscc
+*_i.c
+*_p.c
+*.ncb
+*.suo
+*.tlb
+*.tlh
+*.bak
+*.[Cc]ache
+*.ilk
+*.log
+*.lib
+*.sbr
+*.sdf
+ipch/
+obj/
+[Dd]ebug*/
+[Rr]elease*/
+Ankh.NoLoad
+*.vsp
+.vs/
+**/packages/
+**/bin/
+
+#Tooling
+_ReSharper*/
+*.resharper
+[Tt]est[Rr]esult*
+
+#Project files
+[Bb]uild/

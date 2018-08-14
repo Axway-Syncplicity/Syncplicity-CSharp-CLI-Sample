@@ -70,8 +70,8 @@ namespace CSharpSampleApp.Services
                 }
                 else
                 {
-                    Console.WriteLine("[Header] Sync-App-Token: " + ConfigurationHelper.GetSyncplicityAdminToken(GolGateway.CurrentRol.Id));
-                    request.Headers.Add("Sync-App-Token", ConfigurationHelper.GetSyncplicityAdminToken(GolGateway.CurrentRol.Id));
+                    Console.WriteLine("[Header] Sync-App-Token: " + ConfigurationHelper.SyncplicityAdminToken);
+                    request.Headers.Add("Sync-App-Token", ConfigurationHelper.SyncplicityAdminToken);
                 }
             }
             else

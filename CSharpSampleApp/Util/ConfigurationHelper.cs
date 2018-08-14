@@ -49,11 +49,7 @@ namespace CSharpSampleApp.Util
         /// access).  It is a user specific application key that
         /// is generated on the main account page: https://my.syncplicity.com/Account/
         /// </remarks>
-        public static string GetSyncplicityAdminToken(int roleId)
-        {
-            var adminTokenKeyForRol = $"syncplicityAdminToken-{roleId}";
-            return GetSettingsValueWithoutPlaceholder(adminTokenKeyForRol, "REPLACE_WITH_ADMIN_TOKEN");
-        }
+        public static string SyncplicityAdminToken => GetSettingsValueWithoutPlaceholder("syncplicityAdminToken", "REPLACE_WITH_ADMIN_TOKEN");
 
         /// <summary>
         /// The owner email should be set to the email created during the initial login to the developer portal.

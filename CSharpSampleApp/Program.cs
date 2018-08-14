@@ -128,9 +128,8 @@ namespace CSharpSampleApp
             var noAppSecret = string.IsNullOrWhiteSpace(ConfigurationHelper.ApplicationSecret);
             if (noAppSecret) yield return "appSecret is not specified";
 
-            var noAdminTokenSpecified = string.IsNullOrWhiteSpace(ConfigurationHelper.GetSyncplicityAdminToken(1)) &&
-                                        string.IsNullOrWhiteSpace(ConfigurationHelper.GetSyncplicityAdminToken(2));
-            if (noAdminTokenSpecified) yield return "Neither syncplicityAdminToken-1, nor syncplicityAdminToken-2 are specified";
+            var noAdminTokenSpecified = string.IsNullOrWhiteSpace(ConfigurationHelper.SyncplicityAdminToken);
+            if (noAdminTokenSpecified) yield return "syncplicityAdminToken is not specified";
 
             var noOwnerEmail = string.IsNullOrWhiteSpace(ConfigurationHelper.OwnerEmail);
             if (noOwnerEmail) yield return "ownerEmail is not specified";
