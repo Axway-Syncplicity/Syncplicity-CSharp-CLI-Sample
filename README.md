@@ -63,6 +63,24 @@ This sample application demonstrates usage of Syncplicity APIs. This is what you
 5. Build the solution.
 6. Run the application.
 
+### Storage Vault Authentication Sample
+
+__Note:__ This is an advanced concept.
+If your company does not use the SVA, you don't need to study it.
+[Learn more about SVA.](https://syncplicity.zendesk.com/hc/en-us/articles/202659170-About-Syncplicity-StorageVaults-with-authentication-)
+
+Working with Storage Vaults protected with SVA requires additional authentication procedures.
+To run SVA sample:
+
+1. Obtain **Storage Token**, **Machine Id** and **Machine Token**
+    used to authenticate calls to Storage Vault.
+    Follow the 'Setup Procedure' of the [Content Migration Guide](https://developer.syncplicity.com/content-migration-guide) to get those.
+2. Configure the sample (`CSharpSampleApp\App.config`):
+    1. Set Storage Token value (`REPLACE_WITH_STORAGE_TOKEN`)
+    2. Set Machine Token value (`REPLACE_WITH_MACHINE_TOKEN`)
+    3. Set Machine Id value (`REPLACE_WITH_MACHINE_ID`)
+3. Build and run the sample application
+
 ### Debugging with Fiddler
 
 To debug the sample app with Fiddler, one needs to make Fiddler SSL certificates trusted by the application.
