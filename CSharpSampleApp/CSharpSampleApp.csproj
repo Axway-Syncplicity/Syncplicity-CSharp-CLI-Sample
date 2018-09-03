@@ -82,7 +82,6 @@
     <Compile Include="Entities\Group\StorageQuota.cs" />
     <Compile Include="Entities\Link\Link.cs" />
     <Compile Include="Entities\Link\LinkUsage.cs" />
-    <Compile Include="Entities\PII\Model.cs" />
     <Compile Include="Entities\PolicySet\EntitySetType.cs" />
     <Compile Include="Entities\PolicySet\PolicySet.cs" />
     <Compile Include="Entities\Policy\AdminIpRestriction.cs" />
@@ -153,7 +152,6 @@
     <Compile Include="Entities\User\AccountStatus.cs" />
     <Compile Include="Entities\User\AccountType.cs" />
     <Compile Include="Entities\User\User.cs" />
-    <Compile Include="Examples\CrossRolExample.cs" />
     <Compile Include="Examples\ContentExample.cs" />
     <Compile Include="Examples\ProvisioningExample.cs" />
     <Compile Include="OAuth\OAuth.cs" />
@@ -169,7 +167,6 @@
     <Compile Include="Services\GroupMembersService.cs" />
     <Compile Include="Services\ParticipantsService.cs" />
     <Compile Include="Services\GroupsService.cs" />
-    <Compile Include="Services\UserPiiService.cs" />
     <Compile Include="Services\StorageEndpointsService.cs" />
     <Compile Include="Services\SyncPointsService.cs" />
     <Compile Include="Services\SyncService.cs" />

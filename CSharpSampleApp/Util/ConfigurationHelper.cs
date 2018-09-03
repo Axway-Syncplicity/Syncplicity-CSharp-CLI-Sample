@@ -62,11 +62,6 @@ namespace CSharpSampleApp.Util
         public static string OwnerEmail => GetSettingsValueWithoutPlaceholder("ownerEmail", "REPLACE_OWNER_EMAIL");
 
         /// <summary>
-        /// The other rol email should be set to email of the user hosted on another rol.
-        /// </summary>
-        public static string OtherRolEmail => GetSettingsValueWithoutPlaceholder("otherRolEmail", "REPLACE_OTHER_ROL_OWNER_EMAIL");
-
-        /// <summary>
         /// Enter the local path to a small file that is readable and able to be uploaded.
         /// </summary>
         /// <remarks>

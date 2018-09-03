@@ -68,12 +68,7 @@ namespace CSharpSampleApp
 
                 ProvisioningExample.Execute();
                 Console.WriteLine();
-                Console.WriteLine("Provisioning part is completed. Press enter to continue to cross-ROL example.");
-                Console.ReadLine();
-
-                CrossRolExample.Execute();
-                Console.WriteLine();
-                Console.WriteLine("Cross ROL part is completed. Press enter to continue to simple file upload example.");
+                Console.WriteLine("Provisioning part is completed. Press enter to continue to simple file upload example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteSimple();
