@@ -18,34 +18,32 @@ so would be the basis of an application typically used by administrator, not by 
 
 This sample application demonstrates usage of Syncplicity APIs. This is what you need to know or do before you begin to use Syncplicity APIs:
 
-* Make sure you have an Enterprise Edition account you can use to login to the <https://developer.syncplicity.com>.
-* First time login to Syncplicity:
-  * You can log into Syncplicity Developer Portal using your Syncplicity login credentials.
-    Only Syncplicity Enterprise Edition users are allowed to login to the Developer Portal.
-    Based on the configuration done by your Syncplicity administrator,
-    Syncplicity Developer Portal will present one of the following options for login:
-    * Basic Authentication using Syncplicity username and password.
-    * Enterprise Single Sign-on using the Web-SSO service used by your organization. We support ADFS, OneLogin, Ping and Okta.
+* Make sure you have an Enterprise Edition account you can use to login to the Developer Portal at <https://developer.syncplicity.com>.
+* Log into Syncplicity Developer Portal using your Syncplicity login credentials.
+  Only Syncplicity Enterprise Edition users are allowed to login to the Developer Portal.
+  Based on the configuration done by your Syncplicity administrator,
+  Syncplicity Developer Portal will present one of the following options for login:
+  * Basic Authentication using Syncplicity username and password.
+  * Enterprise Single Sign-on using the Web-SSO service used by your organization. We support ADFS, OneLogin, Ping and Okta.
 * Once you have successfully logged in for the first time,
-  the Syncplicity Developer Portal automatically creates an Enterprise Edition sandbox account to help you develop and test your application.
-  Here is how it works:
-  * The Syncplicity Developer Portal automatically creates your sandbox account
-    by appending "-apidev" to the email address you used for logging into the Developer Portal.
-    For e.g. if you logged into Syncplicity Developer Portal using user@domain.com as your email address,
-    then your associated sandbox account email is user-apidev@domain.com.
-  * The Developer Portal will prompt you to set your password for this sandbox account.
-  * After you have successfully setup your password,
-    you can use the sandbox email address and the newly configured password for logging into your sandbox account
-    by visiting <https://my.syncplicity.com> and using "-apidev" email address.
-    So, in the example above, you will have to use user-apidev@domain.com email address to log in to your sandbox account.
-* Setup your developer sandbox account by configuring your password:
-  * Login to your developer sandbox account by visiting <https://my.syncplicity.com> to make sure its correctly provisioned and that you can access it.
-  * Through your user profile in the developer sandbox account,
-    create an "Application Token" that you will need to authenticate yourself before making API calls.
-    Learn more about this [here](https://syncplicity.zendesk.com/hc/en-us/articles/115002028926-Getting-Started-with-Syncplicity-APIs).
-  * Review API documentation by visiting Docs page on the <https://developer.syncplicity.com>.
-  * Register you app in the Developer Portal to obtain the "App Key" and "App Secret".
-  
+  you must create an Enterprise Edition sandbox account in the Developer Portal.
+  This account can be used to safely test your application using all Syncplicity features
+  without affecting your company production data.
+  * Log into Syncplicity Developer Portal. Click 'My Profile' and then 'Create sandbox'.
+    Refer to the documentation for guidance: <https://developer.syncplicity.com/documentation/overview>.
+  * You can log into <https://my.syncplicity.com> using the sandbox account.
+    Note that the sandbox account email has "-apidev" suffix.
+    So, assuming you regular account email is user@domain.com,
+    use user-apidev@domain.com email address to log in to your sandbox account.
+* Setup your developer sandbox account:
+  * Log into the sandbox account at <https://my.syncplicity.com> to make sure its correctly provisioned and that you can access it.
+  * Go to the 'Account' menu.
+  * Click "Create" under "Application Token" section.
+    The token is used to authenticate an application before making API calls.
+    Learn more [here](https://syncplicity.zendesk.com/hc/en-us/articles/115002028926-Getting-Started-with-Syncplicity-APIs).
+* Review API documentation by visiting Docs page on the <https://developer.syncplicity.com>.
+* Register you app in the Developer Portal to obtain the "App Key" and "App Secret".
+
 ## Running
 
 ### Basic sample
@@ -80,6 +78,25 @@ To run SVA sample:
     2. Set Machine Token value (`REPLACE_WITH_MACHINE_TOKEN`)
     3. Set Machine Id value (`REPLACE_WITH_MACHINE_ID`)
 3. Build and run the sample application
+
+### Running On-Behalf-Of sample (As User)
+
+The On Behalf Of sample demonstrates how an administrator can execute actions on behalf of other users (impersonating other users).
+Running the On Behalf Of sample requires additional configuration.
+
+You need to specify the email of the impersonated user in the `asUserEmail` parameter in `App.config`.
+
+Besides, the owner of the Application Token must have permissions to execute code on behalf of other users.
+By default, Global Administrators do not have this permission. To grant this permission:
+
+1. There must be at least two Global Administrator users in the company.
+2. One administrator must sign into Syncplicity (<https://my.syncplicity.com>)
+3. Go to the Admin area, User Accounts
+4. Find the other administrator account
+5. Under "Privileges", click "Modify", select "Access content on behalf of managed users through API" and click "Save"
+6. Confirm notification of all administrators about the action
+
+Once this is done, the second administrator account can use the `As User` parameter.
 
 ### Debugging with Fiddler
 

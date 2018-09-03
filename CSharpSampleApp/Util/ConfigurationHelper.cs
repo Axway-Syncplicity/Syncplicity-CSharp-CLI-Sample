@@ -44,19 +44,20 @@ namespace CSharpSampleApp.Util
         /// Configuration value of Syncplicity Admin Application Token.
         /// </summary>
         /// <remarks>
-        /// The syncplicityAdminToken is a value generated inside the
-        /// Syncplicity web application admin page (must have admin
-        /// access).  It is a user specific application key that
-        /// is generated on the main account page: https://my.syncplicity.com/Account/
+        /// The admin token of the user on whose behalf to run the application.
+        /// The user must be an administrator to have an admin token.
+        /// See https://developer.syncplicity.com/documentation/overview
+        /// for instructions on creating the token.
         /// </remarks>
         public static string SyncplicityAdminToken => GetSettingsValueWithoutPlaceholder("syncplicityAdminToken", "REPLACE_WITH_ADMIN_TOKEN");
 
         /// <summary>
-        /// The owner email should be set to the email created during the initial login to the developer portal.
+        /// The owner email should be set to the email of a company user.
         /// </summary>
         /// <remarks>
-        /// For example, if you initiated the login to the developer portal as foo.bar@baz.com,
-        /// then we instantiated a sandbox account with foo.bar-apidev@baz.com as the owner email.
+        /// This email is used to determine the Privacy Region (ROL) of the Company.
+        /// Therefore, you can use the email of the admin token owner,
+        /// or the email of another user in the company.
         /// </remarks>
         public static string OwnerEmail => GetSettingsValueWithoutPlaceholder("ownerEmail", "REPLACE_OWNER_EMAIL");
 
