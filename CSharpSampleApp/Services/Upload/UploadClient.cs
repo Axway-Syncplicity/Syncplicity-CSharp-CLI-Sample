@@ -35,6 +35,7 @@ namespace CSharpSampleApp.Services.Upload
         private long    _startByte;
         private byte[]  _headerData;
         private byte[]  _boundaryData;
+        private string _multipartBoundaryParameter;
 
         private bool ShouldChunk {get; set; }
 
@@ -56,7 +57,7 @@ namespace CSharpSampleApp.Services.Upload
             using (var queryRequestStream = CreateRequestStream(queryRequest))
             {
                 WriteSessionKey(queryRequestStream);
-                queryRequestStream.Write(_boundaryData, 0, _boundaryData.Length);
+                WriteMultipartBodyTerminator(queryRequestStream);
             }
 
             GetResponseAndUpdateChunkUploadStateFields(queryRequest);
@@ -208,7 +209,7 @@ namespace CSharpSampleApp.Services.Upload
                     }
                 }
 
-                chunkRequestStream.Write(_boundaryData, 0, _boundaryData.Length);
+                WriteMultipartBodyTerminator(chunkRequestStream);
             }
 
             if (finalChunk)
@@ -232,6 +233,13 @@ namespace CSharpSampleApp.Services.Upload
             return !finalChunk;
         }
 
+        private void WriteMultipartBodyTerminator(Stream requestStream)
+        {
+            var terminator = $"\r\n--{_multipartBoundaryParameter}--\r\n";
+            var terminatorData = Encoding.ASCII.GetBytes(terminator);
+            requestStream.Write(terminatorData, 0, terminatorData.Length);
+        }
+
         private static long GetStartByte(WebResponse response)
         {
             long startByte = 0;
@@ -248,11 +256,11 @@ namespace CSharpSampleApp.Services.Upload
             return startByte;
         }
 
-        private string CreatePostDataString(string boundary)
+        private string CreatePostDataString(string partBoundaryLine)
         {
             var sb = new StringBuilder();
 
-            sb.Append(boundary + "\r\n");
+            sb.Append(partBoundaryLine);
 
             sb.Append($"Content-Disposition: form-data; name=\"fileData\"; filename=\"{Path.GetFileName(_localFilePath)}\"\r\n");
             sb.Append("Content-Transfer-Encoding: binary\r\n");
@@ -291,16 +299,16 @@ namespace CSharpSampleApp.Services.Upload
                 request.Headers.Add("As-User", ApiContext.OnBehalfOfUser.Value.ToString("D"));
             }
 
-            var boundary = "-------" + DateTime.Now.Ticks.ToString("x");
+            _multipartBoundaryParameter = "-------" + DateTime.Now.Ticks.ToString("x");
             // Send boundary with two less dashes as per RFC
-            request.ContentType = "multipart/form-data; boundary=" + boundary;
+            request.ContentType = "multipart/form-data; boundary=" + _multipartBoundaryParameter;
             // Add the two dashes to boundary per RFC for the actual boundary cases
-            boundary = "--" + boundary;
+            var partBoundaryLine = "--" + _multipartBoundaryParameter + "\r\n";
 
             // encode header
-            var postHeader = CreatePostDataString(boundary);
+            var postHeader = CreatePostDataString(partBoundaryLine);
             _headerData = Encoding.ASCII.GetBytes(postHeader);
-            _boundaryData = Encoding.ASCII.GetBytes("\r\n" + boundary + "\r\n");
+            _boundaryData = Encoding.ASCII.GetBytes("\r\n" + partBoundaryLine);
 
             return request;
         }
