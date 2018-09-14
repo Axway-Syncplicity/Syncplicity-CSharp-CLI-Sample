@@ -20,19 +20,19 @@ namespace CSharpSampleApp.Services
         /// <summary>
         /// Gets the url to FolderFoldersService.
         /// </summary>
-        protected static string FolderFoldersUrl { get; } = SyncAPIUrlPrefix + "folder_folders.svc/{0}/folder/{1}/folders";
+        protected static string FolderFoldersUrl => SyncAPIUrlPrefix + "folder_folders.svc/{0}/folder/{1}/folders";
 
         /// <summary>
         /// Gets the url to FolderService.
         /// </summary>
-        protected static string FolderUrl { get; } = SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
+        protected static string FolderUrl => SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
 
-        public static string FileUrl { get; } = SyncAPIUrlPrefix + "file.svc/{0}/file/{1}";
+        public static string FileUrl => SyncAPIUrlPrefix + "file.svc/{0}/file/{1}";
 
         /// <summary>
         /// Gets the url to FoldersService.
         /// </summary>
-        protected static string FoldersUrl { get; } = SyncAPIUrlPrefix + "folders.svc/{0}/folders?virtual_path={1}";
+        protected static string FoldersUrl => SyncAPIUrlPrefix + "folders.svc/{0}/folders?virtual_path={1}";
 
         #endregion Protected Properties
 

@@ -40,6 +40,7 @@ namespace CSharpSampleApp
                  * - Removing the uploaded file
                  * - Removing the folder
                  * - Changing owner of the syncpoint
+                 * - Searching files and folders
                  */
 
                 ValidateRequiredConfiguration();
@@ -78,7 +79,12 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteChunked();
                 Console.WriteLine();
-                Console.WriteLine("Chunked upload part is completed. Press enter to continue to file upload on behalf of another user example.");
+                Console.WriteLine("Chunked upload part is completed. Press enter to continue to content search example.");
+                Console.ReadLine();
+
+                SearchExample.Execute();
+                Console.WriteLine();
+                Console.WriteLine("Search part is completed. Press enter to continue to file upload on behalf of another user example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteOnBehalfOf();

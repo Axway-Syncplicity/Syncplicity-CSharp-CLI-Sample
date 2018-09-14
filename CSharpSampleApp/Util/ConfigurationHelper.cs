@@ -171,6 +171,11 @@ namespace CSharpSampleApp.Util
         /// </summary>
         public static string AsUserEmail => GetSettingsValueWithoutPlaceholder("asUserEmail", "REPLACE_WITH_ONBEHALFOF_USER_EMAIL");
 
+        /// <summary>
+        /// Search query for search example.
+        /// </summary>
+        public static string SearchQuery => ConfigurationManager.AppSettings.Get("searchQuery");
+
         #endregion
 
         private static string GetSettingsValueWithoutPlaceholder(string settingKey, string settingsValuePlaceholder)

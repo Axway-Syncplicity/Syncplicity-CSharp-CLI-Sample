@@ -137,8 +137,13 @@
     <Compile Include="Entities\Quota\QuotaOwnership.cs" />
     <Compile Include="Entities\Report\ReportExportRequestBase.cs" />
     <Compile Include="Entities\Report\ReportExportRequestStorageByUser.cs" />
+    <Compile Include="Entities\Storage\SearchEndpoint.cs" />
+    <Compile Include="Entities\Storage\SearchEndpointStatus.cs" />
+    <Compile Include="Entities\Storage\SearchEndpointType.cs" />
+    <Compile Include="Entities\Storage\SearchEndpointUrl.cs" />
     <Compile Include="Entities\Storage\StorageEndpoint.cs" />
     <Compile Include="Entities\Storage\StorageEndpointAuth.cs" />
+    <Compile Include="Entities\Storage\StorageEndpointSearchCapability.cs" />
     <Compile Include="Entities\Storage\StorageEndpointUrl.cs" />
     <Compile Include="Entities\SyncPointParticipant\Participant.cs" />
     <Compile Include="Entities\SyncPointParticipant\ShareWithNewParticipantOption.cs" />
@@ -154,6 +159,9 @@
     <Compile Include="Entities\User\User.cs" />
     <Compile Include="Examples\ContentExample.cs" />
     <Compile Include="Examples\ProvisioningExample.cs" />
+    <Compile Include="Examples\SearchExample.cs" />
+    <Compile Include="Examples\Search\PagedSearchResultEnumerable.cs" />
+    <Compile Include="Examples\Search\SearchResultsMergingEnumerable.cs" />
     <Compile Include="OAuth\OAuth.cs" />
     <Compile Include="OAuth\TokenResponse.cs" />
     <Compile Include="Program.cs" />
@@ -167,6 +175,12 @@
     <Compile Include="Services\GroupMembersService.cs" />
     <Compile Include="Services\ParticipantsService.cs" />
     <Compile Include="Services\GroupsService.cs" />
+    <Compile Include="Services\Search\FileHit.cs" />
+    <Compile Include="Services\Search\FolderHit.cs" />
+    <Compile Include="Services\Search\Highlight.cs" />
+    <Compile Include="Services\Search\IEntityHit.cs" />
+    <Compile Include="Services\Search\SearchClient.cs" />
+    <Compile Include="Services\Search\SearchResponse.cs" />
     <Compile Include="Services\StorageEndpointsService.cs" />
     <Compile Include="Services\SyncPointsService.cs" />
     <Compile Include="Services\SyncService.cs" />

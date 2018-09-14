@@ -12,7 +12,7 @@ namespace CSharpSampleApp.Services
         /// <summary>
         /// Gets url to Folder service.
         /// </summary>
-        protected static string FolderUrl { get; } = SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
+        protected static string FolderUrl => SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
 
         #endregion Static Members
 

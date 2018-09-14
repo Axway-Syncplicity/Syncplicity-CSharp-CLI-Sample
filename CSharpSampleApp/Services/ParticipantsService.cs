@@ -10,7 +10,7 @@ namespace CSharpSampleApp.Services
     {
         #region Variables
 
-        private static readonly string _ParticipantsUrl = SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
+        private static string ParticipantsUrl => SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
 
         #endregion Variables
 
@@ -19,7 +19,7 @@ namespace CSharpSampleApp.Services
         public static void RemoveParticipants(long syncpointId, params string[] emails)
         {
             var participants = emails.Select(x => new Participant {User = new User {EmailAddress = x}}).ToArray();
-            HttpDelete<string>(string.Format(_ParticipantsUrl, syncpointId), participants);
+            HttpDelete<string>(string.Format(ParticipantsUrl, syncpointId), participants);
         }
 
         #endregion Methods

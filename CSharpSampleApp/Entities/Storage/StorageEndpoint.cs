@@ -48,5 +48,8 @@ namespace CSharpSampleApp.Entities
 
         [DataMember(EmitDefaultValue = true, Order = 15)]
         public decimal ConsumedGb;
+
+        [DataMember(EmitDefaultValue = false, Order = 19)]
+        public StorageEndpointSearchCapability Search;
     }
 }

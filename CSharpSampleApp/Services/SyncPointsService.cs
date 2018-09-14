@@ -26,22 +26,22 @@ namespace CSharpSampleApp.Services
         /// <summary>
         /// Gets url to syncpoints service.
         /// </summary>
-        protected static string SyncpointsUrl { get; } = SyncpointAPIUrlPrefix + "syncpoints.svc/";
+        protected static string SyncpointsUrl => SyncpointAPIUrlPrefix + "syncpoints.svc/";
 
         /// <summary>
         /// Gets url to syncpoint service.
         /// </summary>
-        protected static string SyncpointUrl { get; } = SyncpointAPIUrlPrefix + "syncpoint.svc/{0}";
+        protected static string SyncpointUrl => SyncpointAPIUrlPrefix + "syncpoint.svc/{0}";
 
         /// <summary>
         /// Gets url to links service.
         /// </summary>
-        protected static string LinksUrl { get; } = SyncpointAPIUrlPrefix + "links.svc/";
+        protected static string LinksUrl => SyncpointAPIUrlPrefix + "links.svc/";
 
         /// <summary>
         /// Gets url to syncpoint participants service.
         /// </summary>
-        protected static string SyncPointParticipants { get; } = SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
+        protected static string SyncPointParticipants => SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
 
         #endregion Static Members
 

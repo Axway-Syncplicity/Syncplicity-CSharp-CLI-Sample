@@ -13,12 +13,12 @@ namespace CSharpSampleApp.Services
         /// <summary>
         /// Gets url to storage endpoints service.
         /// </summary>
-        protected static string StorageEndpointsUrl { get; } = StorageAPIUrlPrefix + "storageendpoints.svc/";
+        protected static string StorageEndpointsUrl => StorageAPIUrlPrefix + "storageendpoints.svc/";
 
         /// <summary>
         /// Gets url to retrieve storage endpoint for a given user.
         /// </summary>
-        protected static string StorageEndpointByUserUrl { get; } = StorageAPIUrlPrefix + "storageendpoint.svc/?user={0}";
+        protected static string StorageEndpointByUserUrl => StorageAPIUrlPrefix + "storageendpoint.svc/?user={0}";
 
         #endregion Static Members
 
@@ -31,6 +31,15 @@ namespace CSharpSampleApp.Services
         public static StorageEndpoint[] GetStorageEndpoints()
         {
             return HttpGet<StorageEndpoint[]>(StorageEndpointsUrl);
+        }
+
+        /// <summary>
+        /// Gets storage endpoints metadata including search endpoints.
+        /// </summary>
+        /// <returns>The array of storage endpoints.</returns>
+        public static StorageEndpoint[] GetStorageEndpointsWithSearchEndpoints()
+        {
+            return HttpGet<StorageEndpoint[]>(StorageEndpointsUrl + "?include=search");
         }
 
         /// <summary>
