@@ -10,11 +10,13 @@ namespace CSharpSampleApp.Entities
         /// </summary>
         [EnumMember]
         Unknown = 0,
+
         /// <summary>
         /// Company administrators have no restrictions when creating their password
         /// </summary>
         [EnumMember]
         Disabled = 1,
+
         /// <summary>
         /// Company administrators are restricted to creating password of a specified minimum complexity
         /// </summary>

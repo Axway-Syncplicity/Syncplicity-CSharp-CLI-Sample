@@ -10,11 +10,13 @@ namespace CSharpSampleApp.Entities
         /// </summary>
         [EnumMember]
         Unknown = 0,
+
         /// <summary>
         /// Don't branch any files
         /// </summary>
         [EnumMember]
         Disabled = 1,
+
         /// <summary>
         /// Branch all files
         /// </summary>

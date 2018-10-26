@@ -53,7 +53,7 @@ namespace CSharpSampleApp
 
                 if (!ApiContext.Authenticated)
                 {
-                    Console.WriteLine(@"The OAuth authentication has failed, the app cannot continue.");
+                    Console.WriteLine("The OAuth authentication has failed, the app cannot continue.");
 
                     Console.WriteLine();
                     Console.WriteLine("Press enter to close...");
@@ -63,7 +63,7 @@ namespace CSharpSampleApp
                 }
                 else
                 {
-                    Console.WriteLine(@"Authentication was successful. Press enter to continue to Provisioning example.");
+                    Console.WriteLine("Authentication was successful. Press enter to continue to Provisioning example.");
                     Console.ReadLine();
                 }
 

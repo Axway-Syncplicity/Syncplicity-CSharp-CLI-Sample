@@ -10,11 +10,13 @@ namespace CSharpSampleApp.Entities
         /// </summary>
         [EnumMember]
         Unknown = 0,
+
         /// <summary>
         /// Policy is disabled
         /// </summary>
         [EnumMember]
         Disabled = 1,
+
         /// <summary>
         /// Policy is enabled
         /// </summary>

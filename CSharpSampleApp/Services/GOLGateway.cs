@@ -51,7 +51,7 @@ namespace CSharpSampleApp.Services
         /// <returns>Created request.</returns>
         private static HttpWebRequest CreateRequest(string method, string uri)
         {
-            Console.WriteLine("Creating {0} request to {1}", method.ToUpper(), uri);
+            Console.WriteLine($"Creating {method.ToUpper()} request to {uri}");
 
             var request = WebRequest.Create(uri) as HttpWebRequest;
             request.Method = method.ToUpper();
@@ -110,7 +110,7 @@ namespace CSharpSampleApp.Services
                     return default(T);
                 }
 
-                Console.WriteLine("Error {1} {2} occurs during request to {0}.", response.ResponseUri, (int)response.StatusCode, response.StatusDescription);
+                Console.WriteLine($"Error {(int) response.StatusCode} {response.StatusDescription} occurs during request to {response.ResponseUri}.");
 
                 using (var stream = response.GetResponseStream())
                 {
@@ -136,14 +136,14 @@ namespace CSharpSampleApp.Services
         {
             CurrentRol = _rols.First(x => x.Id != CurrentRol.Id);
 
-            Console.WriteLine("ROL has been switched to '{0}'", CurrentRol.Name);
+            Console.WriteLine($"ROL has been switched to '{CurrentRol.Name}'");
         }
 
         public static void SwitchRol(int id)
         {
             CurrentRol = _rols.First(x => x.Id == id);
 
-            Console.WriteLine("ROL has been switched to '{0}'", CurrentRol.Name);
+            Console.WriteLine($"ROL has been switched to '{CurrentRol.Name}'");
         }
 
         public static string HmacMd5(string value, string salt = "6adebb9f-21f9-49d8-95bf-b7007a208cd4")
@@ -152,10 +152,10 @@ namespace CSharpSampleApp.Services
 
             var email = value.ToLower().Trim();
 
-            // step 1, calculate MD5 hash from input
+            // Step 1, calculate MD5 hash from input
             var hash = hmacMd5.ComputeHash(Encoding.UTF8.GetBytes(email));
 
-            // step 2, get MD5 hash as string
+            // Step 2, get MD5 hash as string
             var sb = new StringBuilder();
             hash.ToList().ForEach(h => sb.Append(h.ToString("X2")));
 

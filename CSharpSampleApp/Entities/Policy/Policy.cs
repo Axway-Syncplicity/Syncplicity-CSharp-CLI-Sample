@@ -50,8 +50,8 @@ namespace CSharpSampleApp.Entities
         [DataMember(EmitDefaultValue = false, Order = 14)]
         public int ShareLinkExpireInDays;
 
-        //old clients before implementing VRI feature use ShareableLinkPolicy
-        //new clients that support VRI use ShareLinkPolicy
+        // Old clients before implementing VRI feature use ShareableLinkPolicy.
+        // New clients that support VRI use ShareLinkPolicy.
         [DataMember(EmitDefaultValue = false, Order = 15)]
         public ShareLinkPolicy ShareLinkPolicy;
 

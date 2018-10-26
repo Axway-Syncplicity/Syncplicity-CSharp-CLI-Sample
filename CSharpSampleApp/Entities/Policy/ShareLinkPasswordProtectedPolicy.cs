@@ -9,10 +9,12 @@
         /// Default policy
         /// </summary>
         Unknown = 0,
+
         /// <summary>
         /// Do not require user to create password for share file links
         /// </summary>
         Disabled = 1,
+
         /// <summary>
         /// Require user to create password for all share file links
         /// </summary>

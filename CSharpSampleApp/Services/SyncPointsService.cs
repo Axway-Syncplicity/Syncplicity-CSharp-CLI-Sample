@@ -15,9 +15,13 @@ namespace CSharpSampleApp.Services
         public enum Include : byte
         {
             None = 0,
+
             Participants = 1,
+
             Inviter = 2,
+
             RemoteWipe = 4,
+
             Children = 8
         }
 

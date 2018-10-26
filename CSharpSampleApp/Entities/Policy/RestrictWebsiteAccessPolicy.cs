@@ -10,11 +10,13 @@ namespace CSharpSampleApp.Entities
         /// </summary>
         [EnumMember]
         Unknown = 0,
+
         /// <summary>
         /// Restriction policy is set off
         /// </summary>
         [EnumMember]
         Disabled = 1,
+
         /// <summary>
         /// Restriction policy is enabled
         /// </summary>

@@ -26,24 +26,24 @@ namespace CSharpSampleApp.OAuth
             }
         }
 
-        //This call will invalidate the current oauth 
-        //and any refresh-tokens along with removing
-        //the grant of access to the application to 
-        //the given user account.   
+        /// <summary>
+        /// This call will invalidate the current oauth and any refresh-tokens
+        /// along with removing the grant of access to the application to the given user account.   
+        /// </summary>
         public static void RevokeToken() {
 
 
             var response = HttpGet<TokenResponse>(GolGateway.OAuthRevokeTokenUrl);
 
-            //response will/should be null for revoke
+            // Response will/should be null for revoke
             ApiContext.OAuthResponse = response;
 	    }
 	
 	    public static void RefreshToken() {
 		
-		    //Note: technically refreshToken() which uses grant_type=client_credentials is the same
-		    //      behavior as just authenticating authenticate() for the first time.  The name is 
-		    //      just to be explicit in the use-case
+		    // Note: technically refreshToken() which uses grant_type=client_credentials
+		    // is the same behavior as just authenticating authenticate() for the first time.
+		    // The name is just to be explicit in the use-case
 		    Authenticate();
 	    }
     }

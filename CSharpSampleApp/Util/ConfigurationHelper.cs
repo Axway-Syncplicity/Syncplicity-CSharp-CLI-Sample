@@ -14,7 +14,10 @@ namespace CSharpSampleApp.Util
         private const string DefaultGolUrl = "https://gol.dev.syncplicity.com";
 
         private const string DefaultSimplePassword = "123123aA";
-        private const string DefaultReportsFolder = "Syncplicity Reports"; //Default system name, should not need to change
+
+        // Default system name, should not need to change
+        private const string DefaultReportsFolder = "Syncplicity Reports";
+
         private const string DefaultGroupName = "SampleAppGroup-";
         private const string DefaultSyncpointName = "SampleAppSyncpoint-";
         private const string DefaultFolderName = "SampleAppFolder-";

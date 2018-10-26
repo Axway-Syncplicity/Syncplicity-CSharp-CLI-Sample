@@ -13,11 +13,13 @@ namespace CSharpSampleApp.Entities
         /// </summary>
         [EnumMember]
         Unknown = 0,
+
         /// <summary>
         /// Expiration policy is set on
         /// </summary>
         [EnumMember]
         Enabled = 1,
+
         /// <summary>
         /// Expiration policy is disabled
         /// </summary>

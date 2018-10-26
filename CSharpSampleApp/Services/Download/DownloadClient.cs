@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Web;
 using CSharpSampleApp.Util;
 
 namespace CSharpSampleApp.Services.Download
@@ -99,8 +97,7 @@ namespace CSharpSampleApp.Services.Download
                 if (response != null)
                 {
                     Console.WriteLine(
-                        "Exception caught during DownloadChunk: Status Code: {0}, Status Description: {1} ",
-                        (int) response.StatusCode, response.StatusDescription);
+                        $"Exception caught during DownloadChunk: Status Code: {(int) response.StatusCode}, Status Description: {response.StatusDescription}");
                 }
 
                 throw;
@@ -138,8 +135,8 @@ namespace CSharpSampleApp.Services.Download
             Debug.WriteLine($"Download Url: {_downloadUrl}");
             Debug.WriteLine($"Session Key: {_sessionKey}");
 
-            Console.WriteLine("Download Url: {0}", _downloadUrl);
-            Console.WriteLine("Session Key: {0}", _sessionKey);
+            Console.WriteLine($"Download Url: {_downloadUrl}");
+            Console.WriteLine($"Session Key: {_sessionKey}");
         }
 
         /// <summary>

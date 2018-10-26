@@ -14,7 +14,7 @@ namespace CSharpSampleApp.Services
     /// </summary>
     public class ApiGateway
     {
-        const string JsonContentType = "application/json";
+        private const string JsonContentType = "application/json";
 
         #region Protected Properties
 
@@ -48,16 +48,17 @@ namespace CSharpSampleApp.Services
         /// <returns>The current request.</returns>
         private static HttpWebRequest ApplyConsumerCredentials(HttpWebRequest request, bool isFirstAuthCall = false, bool isMachineAuthentication = false, string bearer = null)
         {
-            //If this is the first OAuth authentication call, then we don't have an OAuth Bearer token (access token), so we will use the
-            //Application Key and Application Secret as the consumer credentials for the application.  However, once we've successfully
-            //connected to the api gateway for the first time, we will receive an OAuth access token (Bearer token), you will
-            //need to manage that bearer token and use it for subsequent calls to the API gateway.
+            // If this is the first OAuth authentication call, then we don't have an OAuth Bearer token (access token).
+            // So we will use the Application Key and Application Secret as the consumer credentials for the application.
+            // However, once we've successfully connected to the api gateway for the first time,
+            // we will receive an OAuth access token (Bearer token).
+            // We will need to manage the bearer token and use it for subsequent calls to the API gateway.
             if (isFirstAuthCall)
             {
-                var basicAuthRawToken = ConfigurationHelper.ApplicationKey + ":" + ConfigurationHelper.ApplicationSecret;
+                var basicAuthRawToken = $"{ConfigurationHelper.ApplicationKey}:{ConfigurationHelper.ApplicationSecret}";
                 var basicAuthToken = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(basicAuthRawToken));
-                Console.WriteLine("[Header] Authorization: Basic " + basicAuthToken + " (Base64 encoded combination of App key and App secret)");
-                request.Headers.Add("Authorization", "Basic " + basicAuthToken);
+                Console.WriteLine($"[Header] Authorization: Basic {basicAuthToken} (Base64 encoded combination of App key and App secret)");
+                request.Headers.Add("Authorization", $"Basic {basicAuthToken}");
 
                 if (isMachineAuthentication)
                 {
@@ -65,26 +66,26 @@ namespace CSharpSampleApp.Services
                     {
                         throw new ConfigurationErrorsException("machineToken key value should be defined in configuration");
                     }
-                    Console.WriteLine("[Header] Sync-Machine-Token: " + ConfigurationHelper.SyncplicityMachineToken);
+                    Console.WriteLine($"[Header] Sync-Machine-Token: {ConfigurationHelper.SyncplicityMachineToken}");
                     request.Headers.Add("Sync-Machine-Token", ConfigurationHelper.SyncplicityMachineToken);
                 }
                 else
                 {
-                    Console.WriteLine("[Header] Sync-App-Token: " + ConfigurationHelper.SyncplicityAdminToken);
+                    Console.WriteLine($"[Header] Sync-App-Token: {ConfigurationHelper.SyncplicityAdminToken}");
                     request.Headers.Add("Sync-App-Token", ConfigurationHelper.SyncplicityAdminToken);
                 }
             }
             else
             {
-                Console.WriteLine("[Header] AppKey: " + ConfigurationHelper.ApplicationKey );
-    			Console.WriteLine("[Header] Authorization: Bearer " +  ApiContext.AccessToken );
+                Console.WriteLine($"[Header] AppKey: {ConfigurationHelper.ApplicationKey}");
+    			Console.WriteLine($"[Header] Authorization: Bearer {ApiContext.AccessToken}");
                 request.Headers.Add("AppKey", ConfigurationHelper.ApplicationKey);
-                request.Headers.Add("Authorization", "Bearer " + (bearer ?? ApiContext.AccessToken));
+                request.Headers.Add("Authorization", $"Bearer {bearer ?? ApiContext.AccessToken}");
             }
 
             if (ApiContext.OnBehalfOfUser.HasValue)
             {
-                Console.WriteLine("[Header] As-User: " + ApiContext.OnBehalfOfUser.Value.ToString("D"));
+                Console.WriteLine($"[Header] As-User: {ApiContext.OnBehalfOfUser.Value:D}");
                 request.Headers.Add("As-User", ApiContext.OnBehalfOfUser.Value.ToString("D"));
             }
 
@@ -177,7 +178,7 @@ namespace CSharpSampleApp.Services
 
                 Console.WriteLine($"Error {(int)response.StatusCode} {response.StatusDescription} occurs during request to {response.ResponseUri}.");
 
-                // it's needed to authorize again and then send the same request again
+                // Need to authenticate again and re-send the request.
                 var unauthorizedProbablyBecauseOfExpiredToken = response.StatusCode == HttpStatusCode.Unauthorized ||
                         response.StatusCode == HttpStatusCode.Forbidden && response.StatusDescription == "Forbidden";
                 var isFirstRequestAttempt = requestAttemptIndex == 0;
@@ -214,7 +215,7 @@ namespace CSharpSampleApp.Services
         /// <returns>Created request.</returns>
         private static HttpWebRequest CreateRequest(string method, string uri, bool isFirstAuthCall = false, bool isMachineAuthentication = false, string bearer = null)
         {
-            Console.WriteLine("Creating {0} request to {1}", method.ToUpper(), uri);
+            Console.WriteLine($"Creating {method.ToUpper()} request to {uri}");
             var request = WebRequest.Create(uri) as HttpWebRequest;
             request.Method = method.ToUpper();
             request.Accept = JsonContentType;
@@ -266,8 +267,8 @@ namespace CSharpSampleApp.Services
             Console.WriteLine();
             Console.WriteLine("Trying to re-authenticate using the same credentials.");
 
-            // it's needed to authorize again
-            // trying to do it and then re-send the initial request
+            // We need to authenticate again.
+            // Trying to do it and then re-send the initial request:
             OAuth.OAuth.RefreshToken();
 
             Console.WriteLine();
@@ -310,8 +311,8 @@ namespace CSharpSampleApp.Services
             Console.WriteLine();
             Console.WriteLine("Trying to re-authenticate using the same credentials.");
 
-            // it's needed to authorize again
-            // trying to do it and then re-send the initial request
+            // We need to authenticate again.
+            // Trying to do it and then re-send the initial request:
             OAuth.OAuth.RefreshToken();
 
             Console.WriteLine();
@@ -376,8 +377,8 @@ namespace CSharpSampleApp.Services
             Console.WriteLine();
             Console.WriteLine("Trying to re-authenticate using the same credentials.");
 
-            // it's needed to authorize again
-            // trying to do it and then re-send the initial request
+            // We need to authenticate again.
+            // Trying to do it and then re-send the initial request:
             OAuth.OAuth.RefreshToken();
 
             Console.WriteLine();
@@ -416,8 +417,8 @@ namespace CSharpSampleApp.Services
             Console.WriteLine();
             Console.WriteLine("Trying to re-authenticate using the same credentials.");
 
-            // it's needed to authorize again
-            // trying to do it and then re-send the initial request
+            // We need to authenticate again.
+            // Trying to do it and then re-send the initial request:
             OAuth.OAuth.RefreshToken();
 
             Console.WriteLine();

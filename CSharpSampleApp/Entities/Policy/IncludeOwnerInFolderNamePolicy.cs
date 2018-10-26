@@ -9,10 +9,12 @@
         /// Nothing is known about the include owner policy for this company
         /// </summary>
         Unknown = 0,
+
         /// <summary>
         /// Owner name is included
         /// </summary>
         Included = 1,
+
         /// <summary>
         /// Owner name is ignored
         /// </summary>

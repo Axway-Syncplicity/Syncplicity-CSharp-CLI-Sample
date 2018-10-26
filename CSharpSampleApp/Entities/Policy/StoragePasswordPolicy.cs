@@ -12,11 +12,13 @@ namespace CSharpSampleApp.Entities
         /// </summary>
         [EnumMember]
         Unknown = 0,
+
         /// <summary>
         /// Users can not create storage password 
         /// </summary>
         [EnumMember]
         Disabled = 1,
+
         /// <summary>
         /// Users can create storage password 
         /// </summary>

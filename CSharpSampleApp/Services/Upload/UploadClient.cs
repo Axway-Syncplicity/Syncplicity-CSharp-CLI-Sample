@@ -80,12 +80,12 @@ namespace CSharpSampleApp.Services.Upload
                 bool shouldContinue;
                 do
                 {
-                    // the server sends us the startByte back after every chunk request. we'll reset
-                    // our stream position here, inside the while loop to conceivably support future
-                    // situations such as the server informing the client to restart an upload,
-                    // upload chunks out of order, etc.
+                    // The server sends us the startByte back after every chunk request.
+                    // We'll reset our stream position here, inside the while loop -
+                    // to conceivably support future situations
+                    // such as the server informing the client to restart an upload, upload chunks out of order, etc.
                     //
-                    // for sequential chunk uploading this will be a nop.
+                    // For sequential chunk uploading this will be a no-op.
                     fileStream.Position = Math.Min(fileStream.Length, _startByte);
 
                     shouldContinue = UploadChunk(fileStream);
@@ -97,7 +97,7 @@ namespace CSharpSampleApp.Services.Upload
         {
             if (!_fileInfo.Exists)
             {
-                Console.WriteLine(@"File not exists.");
+                Console.WriteLine("File not exists.");
                 return;
             }
 
@@ -113,12 +113,12 @@ namespace CSharpSampleApp.Services.Upload
                 bool shouldContinue;
                 do
                 {
-                    // the server sends us the startByte back after every chunk request. we'll reset
-                    // our stream position here, inside the while loop to conceivably support future
-                    // situations such as the server informing the client to restart an upload,
-                    // upload chunks out of order, etc.
+                    // The server sends us the startByte back after every chunk request.
+                    // We'll reset our stream position here, inside the while loop -
+                    // to conceivably support future situations
+                    // such as the server informing the client to restart an upload, upload chunks out of order, etc.
                     //
-                    // for sequential chunk uploading this will be a nop.
+                    // For sequential chunk uploading this will be a no-op.
                     fileStream.Position = Math.Min(fileStream.Length, _startByte);
 
                     shouldContinue = UploadChunk(fileStream);
@@ -142,7 +142,7 @@ namespace CSharpSampleApp.Services.Upload
                     _eTag = httpWebResponse.Headers[HttpResponseHeader.ETag];
                     _startByte = GetStartByte(httpWebResponse);
 
-                    // if this fails FileUploader will catch the exception and mark the file as unable to upload
+                    // If this fails FileUploader will catch the exception and mark the file as unable to upload
                     _chunkSize = Convert.ToInt64(httpWebResponse.Headers["Syncplicity-Chunk-Size"]);
                 }
                 else
@@ -152,7 +152,9 @@ namespace CSharpSampleApp.Services.Upload
             }
         }
 
-        // returns true if there are more chunks remaining, false if we've reached the end of the file
+        /// <summary>
+        /// Returns true if there are more chunks remaining, false if we've reached the end of the file
+        /// </summary>
         private bool UploadChunk(Stream fileStream)
         {
             string sha256;
@@ -173,7 +175,7 @@ namespace CSharpSampleApp.Services.Upload
                     {
                         if (_chunkSize > 0)
                         {
-                            // clamp buffer size down if this last Read() of the chunk
+                            // Clamp buffer size down if this last Read() of the chunk
                             bufferSize = Math.Min(bufferSize, (int)(_chunkSize - bytesReadTotal));
                         }
 
@@ -214,12 +216,12 @@ namespace CSharpSampleApp.Services.Upload
 
             if (finalChunk)
             {
-                // we've reached the end of the file, time to call our callback
-                Console.WriteLine(@"Uploading file {0} with hash {1} to {2}", _localFilePath, sha256, chunkRequest.Address);
+                // We've reached the end of the file, time to call our callback
+                Console.WriteLine($"Uploading file {_localFilePath} with hash {sha256} to {chunkRequest.Address}");
                 Console.WriteLine("ChunkRequest Headers:");
                 Console.WriteLine(chunkRequest.Headers);
 
-                Debug.WriteLine("Uploading file {0} with hash {1} to {2}", _localFilePath, sha256, chunkRequest.Address);
+                Debug.WriteLine($"Uploading file {_localFilePath} with hash {sha256} to {chunkRequest.Address}");
                 Debug.WriteLine("ChunkRequest Headers:");
                 Debug.WriteLine(chunkRequest.Headers);
 
@@ -283,8 +285,8 @@ namespace CSharpSampleApp.Services.Upload
 
             if (!string.IsNullOrEmpty(_eTag))
             {
-                // if we don't have an etag, it most likely means that the server couldn't create one at the time of our query request.
-                // without an If-Match header, the server will fall back to non chunked acceptance.
+                // If we don't have an etag, it most likely means that the server couldn't create one at the time of our query request.
+                // Without an If-Match header, the server will fall back to non-chunked acceptance.
                 request.Headers.Add(HttpRequestHeader.IfMatch, _eTag);
             }
 
@@ -305,7 +307,7 @@ namespace CSharpSampleApp.Services.Upload
             // Add the two dashes to boundary per RFC for the actual boundary cases
             var partBoundaryLine = "--" + _multipartBoundaryParameter + "\r\n";
 
-            // encode header
+            // Encode header
             var postHeader = CreatePostDataString(partBoundaryLine);
             _headerData = Encoding.ASCII.GetBytes(postHeader);
             _boundaryData = Encoding.ASCII.GetBytes("\r\n" + partBoundaryLine);

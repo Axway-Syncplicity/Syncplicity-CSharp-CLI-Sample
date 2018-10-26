@@ -188,11 +188,11 @@ namespace CSharpSampleApp.Examples
             try
             {
                 downloadClient.DownloadFileSimple(fileToDownload, ConfigurationHelper.DownloadFolder);
-                Console.WriteLine("Download of {0} to {1} succeeded.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder);
+                Console.WriteLine($"Download of {fileToDownload.Filename} to {ConfigurationHelper.DownloadFolder} succeeded.");
             }
             catch (Exception e)
             {
-                Console.WriteLine("Download of {0} to {1} failed.", fileToDownload.Filename, ConfigurationHelper.DownloadFolder);
+                Console.WriteLine($"Download of {fileToDownload.Filename} to {ConfigurationHelper.DownloadFolder} failed.");
                 Console.WriteLine("Exception caught:");
                 Console.WriteLine(e);
 
@@ -203,7 +203,7 @@ namespace CSharpSampleApp.Examples
 
         private static File GetCurrentFile(string localFilePath)
         {
-            //refresh folder info
+            // Refresh folder info
             _currentFolder = SyncService.GetFolder(_currentSyncpoint.Id, _currentFolder.FolderId);
             var currentFile =
                 _currentFolder.Files.First(x => x.Filename == Path.GetFileName(localFilePath));
@@ -242,7 +242,7 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine();
             Console.WriteLine("Start SyncPoint Creation...");
 
-            //get storage endpoint of current user need admin rights
+            // Get storage endpoint of current user need admin rights
             var storageEndpoint = StorageEndpointsService.GetStorageEndpointByUser(user.Id);
 
             if (storageEndpoint == null)
@@ -261,7 +261,7 @@ namespace CSharpSampleApp.Examples
             {
                 Name = ConfigurationHelper.SyncpointName + random.Next(),
                 Type = SyncPointType.Custom,
-                Path = "C:\\Syncplicity",
+                Path = @"C:\Syncplicity",
                 StorageEndpointId = storageEndpoint.Id,
                 Mapped = true,
                 DownloadEnabled = true,
@@ -278,15 +278,14 @@ namespace CSharpSampleApp.Examples
                 return;
             }
 
-            //Need to call getSyncPoint to hydrate all the meta data of the syncpoint, in particular
-            //we need RootFolderId so that we can create a folder next.
+            // Need to call getSyncPoint to hydrate all the meta data of the syncpoint,
+            // in particular we need RootFolderId so that we can create a folder next.
             _currentSyncpoint = SyncPointsService.GetSyncpoint(createdSyncPoints[0].Id);
 
-            //map syncpoint to device
+            // Map syncpoint to device
             if (ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled)
             {
-                Console.WriteLine("Mapping the syncpoint {0} to machine {1}", _currentSyncpoint.Id,
-                    ConfigurationHelper.MachineId);
+                Console.WriteLine($"Mapping the syncpoint {_currentSyncpoint.Id} to machine {ConfigurationHelper.MachineId}");
                 _currentSyncpoint.Mappings = new[]
                 {
                     new Mapping
@@ -299,7 +298,7 @@ namespace CSharpSampleApp.Examples
                 _currentSyncpoint = SyncPointsService.PutSyncpoint(_currentSyncpoint);
             }
 
-            Console.WriteLine("Finished SyncPoint Creation. Created new SyncPoint {0} with Id: {1}", _currentSyncpoint.Name, _currentSyncpoint.Id);
+            Console.WriteLine($"Finished SyncPoint Creation. Created new SyncPoint {_currentSyncpoint.Name} with Id: {_currentSyncpoint.Id}");
         }
 
         public static void CreateFolder()
@@ -312,7 +311,8 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine();
             Console.WriteLine("Start Folder Creation...");
 
-            var syncpointId = _currentSyncpoint.Id;            // internal integer id of syncpoint
+            // Internal integer id of syncpoint
+            var syncpointId = _currentSyncpoint.Id;
 
             var random = new Random();
             var newFolder = new Folder
@@ -349,7 +349,7 @@ namespace CSharpSampleApp.Examples
 
             if (!System.IO.File.Exists(localFilePath))
             {
-                Console.WriteLine("Unable to find local file {0}.  Content APIs will not be able to continue.", localFilePath);
+                Console.WriteLine($"Unable to find local file {localFilePath}.  Content APIs will not be able to continue.");
                 throw new ConfigurationErrorsException("Cannot find the file defined as the value of \"uploadFile\" configuration");
             }
 
@@ -389,7 +389,7 @@ namespace CSharpSampleApp.Examples
                 throw new InvalidOperationException("Uploading file failed", _lastException);
             }
 
-            Console.WriteLine("File {0} uploaded successfully to folder {1}.", localFilePath, _currentFolder.Name);
+            Console.WriteLine($"File {localFilePath} uploaded successfully to folder {_currentFolder.Name}.");
         }
         private static void UploadCallBack(IAsyncResult result)
         {
@@ -402,17 +402,18 @@ namespace CSharpSampleApp.Examples
             {
                 var response = (HttpWebResponse)e.Response;
                 if (response != null)
-                    Console.WriteLine(@"Exception caught during UploadCallback: Status Code: {0}, Status Description: {1} ", (int)response.StatusCode, response.StatusDescription);
+                    Console.WriteLine(
+                        $"Exception caught during UploadCallback: Status Code: {(int) response.StatusCode}, Status Description: {response.StatusDescription}");
                 _lastException = e;
             }
             catch (Exception e)
             {
-                Console.WriteLine(@"Exception caught during UploadCallback: {0} ", e);
+                Console.WriteLine($"Exception caught during UploadCallback: {e}");
                 _lastException = e;
             }
             finally
             {
-                //Must set this, otherwise, hangs when uploadFinished.WaitOne() is called. 
+                // Must set this, otherwise, hangs when uploadFinished.WaitOne() is called. 
                 UploadFinished.Set();
             }
         }

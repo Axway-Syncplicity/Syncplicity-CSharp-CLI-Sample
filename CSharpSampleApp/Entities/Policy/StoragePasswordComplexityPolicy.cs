@@ -12,11 +12,13 @@ namespace CSharpSampleApp.Entities
         /// </summary>
         [EnumMember]
         Unknown = 0,
+
         /// <summary>
         /// Users have no restrictions when creating their password
         /// </summary>
         [EnumMember]
         Disabled = 1,
+
         /// <summary>
         /// Users are restricted to creating password of a specified minimum complexity
         /// </summary>

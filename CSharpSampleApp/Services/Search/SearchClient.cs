@@ -56,7 +56,7 @@ namespace CSharpSampleApp.Services.Search
         private HttpWebRequest CreateRequest(SearchParameters parameters)
         {
             var searchUrl = BuildSearchUrl(parameters);
-            Console.WriteLine("Search Url: {0}", searchUrl);
+            Console.WriteLine($"Search Url: {searchUrl}");
 
             var request = WebRequest.CreateHttp(searchUrl);
 
@@ -176,7 +176,7 @@ namespace CSharpSampleApp.Services.Search
                 : ApiContext.AccessToken;
             _sessionKey = $"Bearer {token}";
 
-            Console.WriteLine("Session Key: {0}", _sessionKey);
+            Console.WriteLine($"Session Key: {_sessionKey}");
         }
 
         internal SearchResultPage GetNextPage(SearchResult searchResult, SearchResultPage thisPage)
@@ -192,7 +192,9 @@ namespace CSharpSampleApp.Services.Search
     internal class SearchParameters
     {
         public string Query { get; }
+
         public int PageSize { get; }
+
         public int SkipRecords { get; }
 
         public SearchParameters(string query, int pageSize, int skipRecords)

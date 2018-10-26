@@ -8,7 +8,9 @@ namespace CSharpSampleApp.Entities
         public enum Status : byte
         {
             Unknown = 0,
+
             Online = 1,
+
             Offline = 2
         }
     }

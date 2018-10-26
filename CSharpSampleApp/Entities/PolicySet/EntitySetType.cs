@@ -10,16 +10,19 @@ namespace CSharpSampleApp.Entities
         /// </summary>
         [EnumMember]
         Unknown = 0,
+
         /// <summary>
         /// Entity set is PolicySet
         /// </summary>
         [EnumMember]
         PolicySet = 1,
+
         /// <summary>
         /// Entity set is StorageSet
         /// </summary>
         [EnumMember]
         StorageSet = 2,
+
         /// <summary>
         /// Entity set is HomeDirectorySet
         /// </summary>

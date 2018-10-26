@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using CSharpSampleApp.Entities;
@@ -44,9 +43,9 @@ namespace CSharpSampleApp.Examples
 
             Console.WriteLine();
 
-            // remove created users
+            // Remove created users
             Console.WriteLine();
-            Console.WriteLine(@"Start Users Deletion...");
+            Console.WriteLine("Start Users Deletion...");
 
             foreach (var user in _createdUsers)
             {
@@ -67,7 +66,7 @@ namespace CSharpSampleApp.Examples
 
             Console.WriteLine();
 
-            //Remove the previously created group
+            // Remove the previously created group
             Console.WriteLine();
             Console.WriteLine($"Delete Group With Id {_createdGroup.Id}");
             GroupsService.DeleteGroup(_createdGroup.Id);
@@ -82,7 +81,7 @@ namespace CSharpSampleApp.Examples
 
             Console.WriteLine();
 
-            // remove selected group member
+            // Remove selected group member
             Console.WriteLine();
             Console.WriteLine("Start Group Member Deletion...");
 
@@ -121,7 +120,7 @@ namespace CSharpSampleApp.Examples
             {
 
                 var addedCount = _groupMemberUsers?.Length ?? 0;
-                Console.WriteLine($"Error Occurred During Adding Some Of Members. Number of Added Members:{addedCount}");
+                Console.WriteLine($"Error Occurred During Adding Some Of Members. Number of Added Members: {addedCount}");
 
                 return;
             }
@@ -172,8 +171,10 @@ namespace CSharpSampleApp.Examples
 
             var group = new Group
             {
-                Name = ConfigurationHelper.GroupName + random.Next(), //Use timestamp to generate unique name
-                Owner = new User {EmailAddress = ConfigurationHelper.OwnerEmail}
+                // Use timestamp to generate unique name
+                Name = ConfigurationHelper.GroupName + random.Next(),
+
+                Owner = new User { EmailAddress = ConfigurationHelper.OwnerEmail }
             };
             return group;
         }
@@ -182,9 +183,9 @@ namespace CSharpSampleApp.Examples
         {
             var baseEmail = GenerateRandomBaseEmail();
 
-            // create users with email typed by user + sequence number
+            // Create users with email typed by user + sequence number
             Console.WriteLine();
-            Console.WriteLine(@"Start Users Creation...");
+            Console.WriteLine("Start Users Creation...");
 
             var usersToAdd = GenerateUsers(baseEmail);
 
@@ -199,7 +200,7 @@ namespace CSharpSampleApp.Examples
 
                 var addedCount = _createdUsers?.Length ?? 0;
 
-                Console.WriteLine($"Error Occurred During Creating Some Of Users. Number of Created Users:{addedCount}");
+                Console.WriteLine($"Error Occurred During Creating Some Of Users. Number of Created Users: {addedCount}");
             }
             else
             {
@@ -254,8 +255,8 @@ namespace CSharpSampleApp.Examples
             var checkUser = TryGetUserByEmail(userEmailAddress);
             if (checkUser != null)
             {
-                //If this is the second time running, we'll need to clean up (delete) previous run's users
-                //This is just to keep the sample code working as if it was the first time run...
+                // If this is the second time running, we'll need to clean up (delete) previous run's users
+                // This is just to keep the sample code working as if it was the first time run...
                 Console.WriteLine(
                     $"\tCleanup of User #{userIndex} [{userEmailAddress}].  Deleting user that may have been created from previous Sample App run.");
                 try
@@ -264,7 +265,7 @@ namespace CSharpSampleApp.Examples
                 }
                 catch (Exception)
                 {
-                    //ignore exceptions as this user may not exist
+                    // Ignore exceptions as this user may not exist
                 }
             }
             else
