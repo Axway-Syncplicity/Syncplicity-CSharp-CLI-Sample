@@ -179,6 +179,21 @@ namespace CSharpSampleApp.Util
         /// </summary>
         public static string SearchQuery => ConfigurationManager.AppSettings.Get("searchQuery");
 
+        /// <summary>
+        /// eDiscovery admin App token for legal-hold example.
+        /// </summary>
+        public static string EDiscoveryAdminSyncplicityToken => ConfigurationManager.AppSettings.Get("eDiscoveryAdminAppToken");
+
+        /// <summary>
+        /// Custodian email for legal-hold example.
+        /// </summary>
+        public static string CustodianEmail => ConfigurationManager.AppSettings.Get("custodianEmail");
+
+        /// <summary>
+        /// Custodian App token for legal-hold example.
+        /// </summary>
+        public static string CustodianSyncplicityToken => ConfigurationManager.AppSettings.Get("custodianAppToken");
+
         #endregion
 
         private static string GetSettingsValueWithoutPlaceholder(string settingKey, string settingsValuePlaceholder)
