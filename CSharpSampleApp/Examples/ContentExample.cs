@@ -101,6 +101,53 @@ namespace CSharpSampleApp.Examples
             RemoveFolder();
         }
 
+        public static void ExecuteLegalHold()
+        {
+            if (string.IsNullOrEmpty(ConfigurationHelper.CustodianEmail)
+                || string.IsNullOrEmpty(ConfigurationHelper.EDiscoveryAdminSyncplicityToken)
+                || string.IsNullOrEmpty(ConfigurationHelper.CustodianSyncplicityToken)
+                )
+            {
+                Console.WriteLine();
+                Console.WriteLine("Requred setting are not set. Skipping Legal-Hold requests");
+                return;
+            }
+
+            var custodian = UsersService.GetUser(ConfigurationHelper.CustodianEmail);
+
+            // reset OAuth for edicovery admin
+            ApiContext.SyncplicityUserAppToken = ConfigurationHelper.EDiscoveryAdminSyncplicityToken;
+            OAuth.OAuth.Authenticate();
+
+            Console.WriteLine("Putting the custodian on legal hold for 30 days...");
+            LegalHoldsService.PutOnLegalHold(custodian.Id, TimeSpan.FromDays(30));
+
+            Console.WriteLine("Creating a content by the custodian...");
+
+            // reset OAuth for custodian admin
+            ApiContext.SyncplicityUserAppToken = ConfigurationHelper.CustodianSyncplicityToken;
+            OAuth.OAuth.Authenticate();
+
+            CreateSyncpoint();
+
+            if (!ApiContext.HasStorageEndpoint) return; // something goes wrong
+
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Simple);
+
+            Console.WriteLine("Removing the content permanently...");
+            RemoveFilePermanently(localFilePath);
+
+            // reset OAuth for edicovery admin
+            ApiContext.SyncplicityUserAppToken = ConfigurationHelper.EDiscoveryAdminSyncplicityToken;
+            OAuth.OAuth.Authenticate();
+            ApiContext.OnBehalfOfUser = custodian.Id;
+
+            Console.WriteLine("Downloading the permanently deleted content by admin...");
+            DownloadFile(localFilePath, true);
+        }
+
         private static bool ValidateConfigurationForOrdinarySample()
         {
             var errors = EvaluateConfigValidationRulesForOrdinarySample().ToList();
@@ -174,9 +221,16 @@ namespace CSharpSampleApp.Examples
             SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, false);
         }
 
-        private static void DownloadFile(string localFilePath)
+        private static void RemoveFilePermanently(string localFilePath)
         {
-            var fileToDownload = GetCurrentFile(localFilePath);
+            var fileToRemove = GetCurrentFile(localFilePath);
+            SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, false);
+            SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, true);
+        }
+
+        private static void DownloadFile(string localFilePath, bool deleted = false)
+        {
+            var fileToDownload = GetCurrentFile(localFilePath, deleted);
 
             Console.WriteLine();
             Console.WriteLine("Start File Downloading...");
@@ -201,10 +255,10 @@ namespace CSharpSampleApp.Examples
 
         }
 
-        private static File GetCurrentFile(string localFilePath)
+        private static File GetCurrentFile(string localFilePath, bool deleted = false)
         {
             // Refresh folder info
-            _currentFolder = SyncService.GetFolder(_currentSyncpoint.Id, _currentFolder.FolderId);
+            _currentFolder = SyncService.GetFolder(_currentSyncpoint.Id, _currentFolder.FolderId, deleted);
             var currentFile =
                 _currentFolder.Files.First(x => x.Filename == Path.GetFileName(localFilePath));
             return currentFile;
