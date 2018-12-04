@@ -88,6 +88,11 @@ namespace CSharpSampleApp
                 Console.ReadLine();
 
                 ContentExample.ExecuteOnBehalfOf();
+                Console.WriteLine();
+                Console.WriteLine("OnBehalOf part is completed. Press enter to continue to Legal-Hold example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteLegalHold();
 
                 Console.WriteLine();
                 Console.WriteLine("Content part is completed. Press enter to exit...");
