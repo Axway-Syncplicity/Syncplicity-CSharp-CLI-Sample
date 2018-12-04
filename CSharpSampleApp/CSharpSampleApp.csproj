@@ -156,6 +156,7 @@
     <Compile Include="Entities\Syncpoint\SyncPointType.cs" />
     <Compile Include="Entities\User\AccountStatus.cs" />
     <Compile Include="Entities\User\AccountType.cs" />
+    <Compile Include="Entities\User\LegalHold.cs" />
     <Compile Include="Entities\User\User.cs" />
     <Compile Include="Examples\ContentExample.cs" />
     <Compile Include="Examples\ProvisioningExample.cs" />
@@ -173,6 +174,7 @@
     <Compile Include="Services\FoldersService.cs" />
     <Compile Include="Services\GrantType.cs" />
     <Compile Include="Services\GroupMembersService.cs" />
+    <Compile Include="Services\LegalHoldsService.cs" />
     <Compile Include="Services\ParticipantsService.cs" />
     <Compile Include="Services\GroupsService.cs" />
     <Compile Include="Services\Search\FileHit.cs" />
