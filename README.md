@@ -4,9 +4,9 @@ Shows examples of various API calls including the initial OAuth2 call.
 
 ## Description
 
-This command-line sample app demonstrates various API calls including the initial OAuth2 authentication call.
-This type of application would not support SSO-based authentication,
-so would be the basis of an application typically used by administrator, not by a typical corporate user.
+This sample application demonstrates various API calls including the initial OAuth2 authentication call.
+This is a CLI application that does not support SSO-based authentication,
+so would be the basis of an application typically used by administrator, not by a regular Syncplicity user.
 
 ## System Requirements
 
@@ -24,7 +24,7 @@ This sample application demonstrates usage of Syncplicity APIs. This is what you
   Based on the configuration done by your Syncplicity administrator,
   Syncplicity Developer Portal will present one of the following options for login:
   * Basic Authentication using Syncplicity username and password.
-  * Enterprise Single Sign-on using the Web-SSO service used by your organization. We support ADFS, OneLogin, Ping and Okta.
+  * Enterprise Single Sign-on using the web SSO service used by your organization. We support ADFS, OneLogin, Ping and Okta.
 * Once you have successfully logged in for the first time,
   you must create an Enterprise Edition sandbox account in the Developer Portal.
   This account can be used to safely test your application using all Syncplicity features
@@ -41,8 +41,8 @@ This sample application demonstrates usage of Syncplicity APIs. This is what you
   * Click "Create" under "Application Token" section.
     The token is used to authenticate an application before making API calls.
     Learn more [here](https://syncplicity.zendesk.com/hc/en-us/articles/115002028926-Getting-Started-with-Syncplicity-APIs).
-* Review API documentation by visiting Docs page on the <https://developer.syncplicity.com>.
-* Register you app in the Developer Portal to obtain the "App Key" and "App Secret".
+* Review API documentation by visiting documentation section on the <https://developer.syncplicity.com>.
+* Register you application in the Developer Portal to obtain the "App Key" and "App Secret".
 
 ## Running
 
@@ -50,7 +50,7 @@ This sample application demonstrates usage of Syncplicity APIs. This is what you
 
 1. Clone the sample project.
 2. Use your favorite .NET IDE to open the `CSharpSampleApp.sln`.
-3. Define new app on <https://developer.syncplicity.com>. The app key and app secret values are found in the application page.
+3. Define new application on <https://developer.syncplicity.com>. The app key and app secret values are found in the application page.
   The Syncplicity admin token is found on the "My Account" page of the Syncplicity administration page.
   Use the "Application Token" field on that page to generate a token.
 4. Update key values in `CSharpSampleApp/App.config`:
@@ -100,7 +100,7 @@ Once this is done, the second administrator account can use the `As User` parame
 
 ### Debugging with Fiddler
 
-To debug the sample app with Fiddler, one needs to make Fiddler SSL certificates trusted by the application.
+To debug the sample application with Fiddler, one needs to make Fiddler SSL certificates trusted by the application.
 The easiest way is by adding Fiddler's certificate to Trusted Root CA list.
 To do this in Fiddler, go to Tools -> Options -> HTTPS -> Actions -> Trust Root Certificate.
 Accept Fiddler warnings, reading carefully what they say.
