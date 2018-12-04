@@ -1,6 +1,7 @@
 ﻿using System;
 
 using CSharpSampleApp.OAuth;
+using CSharpSampleApp.Util;
 
 namespace CSharpSampleApp.Services
 {
@@ -9,6 +10,15 @@ namespace CSharpSampleApp.Services
     /// </summary>
     public class ApiContext
     {
+        #region Private Fileds
+
+        /// <summary>
+        /// Syncplicity Application Token for user
+        /// </summary>
+        private static string _syncplicityUserAppToken;
+
+        #endregion
+
         #region Public Properties
 
         /// <summary>
@@ -49,6 +59,22 @@ namespace CSharpSampleApp.Services
         /// If set then request will be performed OnBehalfOf user.
         /// </summary>
         public static Guid? OnBehalfOfUser { get; set; }
+
+        /// <summary>
+        /// Syncplicity Application Token for user
+        /// </summary>
+        public static string SyncplicityUserAppToken
+        {
+            get { return _syncplicityUserAppToken ?? ConfigurationHelper.SyncplicityAdminToken; }
+            set
+            {
+                if (value == null || !value.Equals(_syncplicityUserAppToken))
+                {
+                    OAuthResponse = null;
+                    _syncplicityUserAppToken = value;
+                }
+            }
+        }
 
         #endregion Public Properties
     }
