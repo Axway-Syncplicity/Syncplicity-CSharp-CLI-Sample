@@ -1,2 +1,12 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+###################
+## SOURCE CODE
+###################
+
+*.bat      text eol=crlf
+*.sh       text eol=lf
+*.cs       text
+*.resx     text
+
