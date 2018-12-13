@@ -2,8 +2,6 @@
 using System.Runtime.Serialization;
 using System.Text;
 
-using Newtonsoft.Json;
-
 namespace CSharpSampleApp.Util
 {
 
@@ -30,13 +28,6 @@ namespace CSharpSampleApp.Util
                 ms.Position = 0;
                 return Encoding.UTF8.GetString(ms.ToArray());
             }
-        }
-
-        public static string JSONSerizalize<T>(T entity) where T : class
-        {
-            if (entity == null) return null;
-
-            return JsonConvert.SerializeObject(entity);
         }
 
         /// <summary>

@@ -120,8 +120,7 @@ namespace CSharpSampleApp.Services.Download
             if (syncpoint == null)
                 throw new ArgumentException("Invalid Syncpoint Id");
 
-            var storageEndpoints = StorageEndpointsService.GetStorageEndpoints();
-            var storageEndpoint = storageEndpoints.First(x => x.Id == syncpoint.StorageEndpointId);
+            var storageEndpoint = StorageEndpointsService.GetStorageEndpoint(syncpoint.StorageEndpointId);
 
             if (storageEndpoint.Urls == null || storageEndpoint.Urls.Length == 0)
                 throw new ArgumentException("Invalid StorageEndpoint Urls");

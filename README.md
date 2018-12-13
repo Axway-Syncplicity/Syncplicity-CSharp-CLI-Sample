@@ -98,6 +98,17 @@ By default, Global Administrators do not have this permission. To grant this per
 
 Once this is done, the second administrator account can use the `As User` parameter.
 
+### Running Legal Hold sample
+
+The Legal Hold sample demonstrates how an administrator with eDiscovery role can put a user on legal hold and then retrieve the user's content even permanently deleted one.
+Running the Legal Hold sample requires additional configuration.
+
+You need to specify next parameters in `App.config`:
+1. eDiscovery administrator application token in the `eDiscoveryAdminToken` parameter. __Note:__ the eDiscovery administrator must have permissions to access content on behalf of managed users and data custodian user must belong to a group of such users.
+2. Data custodian user email in the `dataCustodianUserEmail` parameter.
+3. Data custodian user application token in the `dataCustodianUserToken` parameter. __Note:__ the data custodian user must be an admin to generate application token.
+
+
 ### Debugging with Fiddler
 
 To debug the sample application with Fiddler, one needs to make Fiddler SSL certificates trusted by the application.

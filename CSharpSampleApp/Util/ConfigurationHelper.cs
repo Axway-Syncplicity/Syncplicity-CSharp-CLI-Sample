@@ -179,6 +179,26 @@ namespace CSharpSampleApp.Util
         /// </summary>
         public static string SearchQuery => ConfigurationManager.AppSettings.Get("searchQuery");
 
+        /// <summary>
+        /// eDiscovery admin token for legal hold example.
+        /// </summary>
+        /// <remarks>
+        /// The admin must have "eDiscovery Administrator" role and have an Application token.
+        /// See https://developer.syncplicity.com/documentation/overview
+        /// for instructions on creating the token.
+        /// </remarks>
+        public static string eDiscoveryAdminToken => ConfigurationManager.AppSettings.Get("eDiscoveryAdminToken");
+
+        /// <summary>
+        /// Data custodian user email for legal hold example.
+        /// </summary>
+        public static string DataCustodianUserEmail => ConfigurationManager.AppSettings.Get("dataCustodianUserEmail");
+
+        /// <summary>
+        /// Data custodian user Application token for legal hold example.
+        /// </summary>
+        public static string DataCustodianUserToken => ConfigurationManager.AppSettings.Get("dataCustodianUserToken");
+
         #endregion
 
         private static string GetSettingsValueWithoutPlaceholder(string settingKey, string settingsValuePlaceholder)

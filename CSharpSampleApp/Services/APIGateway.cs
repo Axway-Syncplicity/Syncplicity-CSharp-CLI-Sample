@@ -15,6 +15,7 @@ namespace CSharpSampleApp.Services
     public class ApiGateway
     {
         private const string JsonContentType = "application/json";
+        private static JsonSerializerSettings _serializerSettings;
 
         #region Protected Properties
 
@@ -39,12 +40,22 @@ namespace CSharpSampleApp.Services
 
         #endregion
 
+        static ApiGateway()
+        {
+            _serializerSettings = new JsonSerializerSettings
+            {
+                DateFormatHandling = DateFormatHandling.MicrosoftDateFormat
+            };
+        }
+
         #region Private Methods
 
         /// <summary>
         /// Applies the current credentials to the request.
         /// </summary>
         /// <param name="request">The request object.</param>
+        /// <param name="isMachineAuthentication">Set to true if machine authentication is required instead of regular user authentication.
+        /// As a result different headers will be used</param>
         /// <returns>The current request.</returns>
         private static HttpWebRequest ApplyConsumerCredentials(HttpWebRequest request, bool isFirstAuthCall = false, bool isMachineAuthentication = false, string bearer = null)
         {
@@ -71,8 +82,8 @@ namespace CSharpSampleApp.Services
                 }
                 else
                 {
-                    Console.WriteLine($"[Header] Sync-App-Token: {ConfigurationHelper.SyncplicityAdminToken}");
-                    request.Headers.Add("Sync-App-Token", ConfigurationHelper.SyncplicityAdminToken);
+                    Console.WriteLine($"[Header] Sync-App-Token: {ApiContext.SyncplicityUserAppToken}");
+                    request.Headers.Add("Sync-App-Token", ApiContext.SyncplicityUserAppToken);
                 }
             }
             else
@@ -125,6 +136,9 @@ namespace CSharpSampleApp.Services
         /// <typeparam name="T">The type of received object.</typeparam>
         /// <param name="request">The request object.</param>
         /// <param name="requestAttemptIndex">The index of this attempt to execute request.</param>
+        /// <param name="isNeededReAuth">
+        /// Outputs a value that determines if re-authentication should be performed with a subsequent additional request attempt.
+        /// </param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
         private static T ReadResponse<T>(WebRequest request, int requestAttemptIndex, out bool isNeededReAuth)
         {
@@ -158,7 +172,7 @@ namespace CSharpSampleApp.Services
                             using (var reader = new StreamReader(memoryStream))
                             using (var jsonReader = new JsonTextReader(reader))
                             {
-                                return JsonSerializer.Create(new JsonSerializerSettings())
+                                return JsonSerializer.Create(_serializerSettings)
                                     .Deserialize<T>(jsonReader);
                             }
                         }
@@ -212,6 +226,8 @@ namespace CSharpSampleApp.Services
         /// </summary>
         /// <param name="method">The request's method.</param>
         /// <param name="uri">The url of request.</param>
+        /// <param name="isMachineAuthentication">Set to true if machine authentication is required instead of regular user authentication.
+        /// As a result different headers will be used</param>
         /// <returns>Created request.</returns>
         private static HttpWebRequest CreateRequest(string method, string uri, bool isFirstAuthCall = false, bool isMachineAuthentication = false, string bearer = null)
         {
@@ -243,6 +259,13 @@ namespace CSharpSampleApp.Services
                 requestStream.Write(data, 0, data.Length);
                 requestStream.Close();
             }
+        }
+
+        private static string JsonSerizalize<T>(T entity) where T : class
+        {
+            if (entity == null) return null;
+
+            return JsonConvert.SerializeObject(entity, _serializerSettings);
         }
 
         #endregion Private Methods
@@ -293,6 +316,7 @@ namespace CSharpSampleApp.Services
         /// <typeparam name="T">The type of returned object.</typeparam>
         /// <param name="uri">The request url.</param>
         /// <param name="body">The request body.</param>
+        /// <param name="contentType">The type of request content.</param>
         /// <param name="isMachineAuthentication">Set to true if machine authentication is required instead of regular user authentication.
         /// As a result different headers will be used</param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
@@ -344,14 +368,14 @@ namespace CSharpSampleApp.Services
         protected static T HttpPost<T>(string uri, T body)
             where T : class
         {
-            return HttpPost<T>(uri, Serialization.JSONSerizalize(body), JsonContentType);
+            return HttpPost<T>(uri, JsonSerizalize(body), JsonContentType);
         }
 
         protected static TResult HttpPost<TResult, TBody>(string uri, TBody body, string bearer = null)
             where TResult : class
             where TBody : class
         {
-            return HttpPost<TResult>(uri, Serialization.JSONSerizalize(body), JsonContentType, bearer: bearer);
+            return HttpPost<TResult>(uri, JsonSerizalize(body), JsonContentType, bearer: bearer);
         }
 
 
@@ -360,6 +384,7 @@ namespace CSharpSampleApp.Services
         /// </summary>
         /// <typeparam name="T">The type of returned object.</typeparam>
         /// <param name="uri">The request url.</param>
+        /// <param name="body">The request body.</param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
         protected static T HttpDelete<T>(string uri, object body = null)
         {
@@ -368,7 +393,7 @@ namespace CSharpSampleApp.Services
             if (body != null)
             {
                 request.ContentType = JsonContentType;
-                WriteBody(request, Serialization.JSONSerizalize(body));
+                WriteBody(request, JsonSerizalize(body));
             }
             bool isNeededReAuth;
             var response = ReadFirstAttemptResponse<T>(request, out isNeededReAuth);
@@ -402,6 +427,7 @@ namespace CSharpSampleApp.Services
         /// <typeparam name="T">The type of returned object.</typeparam>
         /// <param name="uri">The request url.</param>
         /// <param name="body">The request body.</param>
+        /// <param name="contentType">The type of request content.</param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
         protected static T HttpPut<T>(string uri, string body, string contentType)
         {
@@ -449,7 +475,7 @@ namespace CSharpSampleApp.Services
         protected static T HttpPut<T>(string uri, T body) 
             where T : class
         {
-            return HttpPut<T>(uri, Serialization.JSONSerizalize(body), JsonContentType);
+            return HttpPut<T>(uri, JsonSerizalize(body), JsonContentType);
         }
 
         #endregion Protected Methods

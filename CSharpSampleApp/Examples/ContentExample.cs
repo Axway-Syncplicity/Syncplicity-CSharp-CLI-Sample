@@ -23,6 +23,7 @@ namespace CSharpSampleApp.Examples
         private static Exception _lastException;
         private static readonly AutoResetEvent UploadFinished = new AutoResetEvent(false);
         private static User _oldOwner;
+        private static readonly Random _random = new Random(); 
 
         /*
          * Content - Simple
@@ -99,6 +100,63 @@ namespace CSharpSampleApp.Examples
             DownloadFile(localFilePath);
             RemoveFile(localFilePath);
             RemoveFolder();
+
+            ApiContext.OnBehalfOfUser = null;
+        }
+
+        /*
+         * Content + Provisioning - put data custodian user on legal hold, and read deleted data on her behalf.
+         * Note: actions in this example require setting values from Legal Holds configuration section.
+         *
+         * - as eDiscovery administrator looking up for the data custodian user and putting him on legal hold
+         * - as custodian user creating a content and then deleting it
+         * - as eDiscovery administrator reading the content on behalf of the user, but also reading deleted content
+         */
+        public static void ExecuteLegalHold()
+        {
+            if (string.IsNullOrEmpty(ConfigurationHelper.DataCustodianUserEmail)
+                || string.IsNullOrEmpty(ConfigurationHelper.eDiscoveryAdminToken)
+                || string.IsNullOrEmpty(ConfigurationHelper.DataCustodianUserToken)
+                )
+            {
+                Console.WriteLine();
+                Console.WriteLine("Required settings are not set. Skipping Legal Hold requests");
+                return;
+            }
+
+            var custodian = UsersService.GetUser(ConfigurationHelper.DataCustodianUserEmail);
+
+            // reset OAuth for eDiscovery administrator
+            ApiContext.SyncplicityUserAppToken = ConfigurationHelper.eDiscoveryAdminToken;
+            OAuth.OAuth.Authenticate();
+
+            Console.WriteLine("eDiscovery: putting the data custodian user on legal hold for 30 days...");
+            LegalHoldsService.PutOnLegalHold(custodian.Id, TimeSpan.FromDays(30));
+
+            // reset OAuth for data custodian user
+            ApiContext.SyncplicityUserAppToken = ConfigurationHelper.DataCustodianUserToken;
+            OAuth.OAuth.Authenticate();
+
+            Console.WriteLine("User: creating a content...");
+            CreateSyncpoint();
+
+            if (!ApiContext.HasStorageEndpoint) return; // something went wrong
+
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Simple);
+
+            Console.WriteLine("User: removing the content permanently...");
+            RemoveFilePermanently(localFilePath);
+
+            // reset OAuth for eDiscovery administrator but act On-Behalf-Of the data custodian user
+            ApiContext.SyncplicityUserAppToken = ConfigurationHelper.eDiscoveryAdminToken;
+            OAuth.OAuth.Authenticate();
+            ApiContext.OnBehalfOfUser = custodian.Id;
+            
+            // go beyond the user possibilities and download earlier deleted and legally held content
+            Console.WriteLine("eDiscovery On-Behalf-Of User: Downloading permanently deleted content...");
+            DownloadFile(localFilePath, true);
         }
 
         private static bool ValidateConfigurationForOrdinarySample()
@@ -174,9 +232,16 @@ namespace CSharpSampleApp.Examples
             SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, false);
         }
 
-        private static void DownloadFile(string localFilePath)
+        private static void RemoveFilePermanently(string localFilePath)
         {
-            var fileToDownload = GetCurrentFile(localFilePath);
+            var fileToRemove = GetCurrentFile(localFilePath);
+            SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, false);
+            SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, true);
+        }
+
+        private static void DownloadFile(string localFilePath, bool deleted = false)
+        {
+            var fileToDownload = GetCurrentFile(localFilePath, deleted);
 
             Console.WriteLine();
             Console.WriteLine("Start File Downloading...");
@@ -201,10 +266,10 @@ namespace CSharpSampleApp.Examples
 
         }
 
-        private static File GetCurrentFile(string localFilePath)
+        private static File GetCurrentFile(string localFilePath, bool deleted = false)
         {
             // Refresh folder info
-            _currentFolder = SyncService.GetFolder(_currentSyncpoint.Id, _currentFolder.FolderId);
+            _currentFolder = SyncService.GetFolder(_currentSyncpoint.Id, _currentFolder.FolderId, deleted);
             var currentFile =
                 _currentFolder.Files.First(x => x.Filename == Path.GetFileName(localFilePath));
             return currentFile;
@@ -242,24 +307,23 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine();
             Console.WriteLine("Start SyncPoint Creation...");
 
-            // Get storage endpoint of current user need admin rights
-            var storageEndpoint = StorageEndpointsService.GetStorageEndpointByUser(user.Id);
-
-            if (storageEndpoint == null)
-            {
-                Console.WriteLine();
-                Console.WriteLine(
-                    "Unable to determine the user's storage endpoint.  Content APIs will not be able to proceed.");
-                return;
-            }
-            ApiContext.HasStorageEndpoint = true;
             if (isObo)
                 ApiContext.OnBehalfOfUser = user.Id;
 
-            var random = new Random();
+            // Get default storage endpoint of current user
+            var storageEndpoint = StorageEndpointsService.GetStorageEndpoint();
+            if (storageEndpoint == null)
+            {
+                Console.WriteLine();
+                Console.WriteLine("Unable to determine the user's storage endpoint. " +
+                                  "Content APIs will not be able to proceed.");
+                return;
+            }
+            ApiContext.HasStorageEndpoint = true;
+
             var newSyncPoint = new SyncPoint
             {
-                Name = ConfigurationHelper.SyncpointName + random.Next(),
+                Name = ConfigurationHelper.SyncpointName + _random.Next(),
                 Type = SyncPointType.Custom,
                 Path = @"C:\Syncplicity",
                 StorageEndpointId = storageEndpoint.Id,
@@ -301,7 +365,7 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine($"Finished SyncPoint Creation. Created new SyncPoint {_currentSyncpoint.Name} with Id: {_currentSyncpoint.Id}");
         }
 
-        public static void CreateFolder()
+        private static void CreateFolder()
         {
             if (_currentSyncpoint == null)
             {
@@ -314,10 +378,9 @@ namespace CSharpSampleApp.Examples
             // Internal integer id of syncpoint
             var syncpointId = _currentSyncpoint.Id;
 
-            var random = new Random();
             var newFolder = new Folder
             {
-                VirtualPath = $@"\{ConfigurationHelper.FolderName}{random.Next()}\",
+                VirtualPath = $@"\{ConfigurationHelper.FolderName}{_random.Next()}\",
                 Status = FolderStatus.Added,
                 SyncpointId = syncpointId
             };

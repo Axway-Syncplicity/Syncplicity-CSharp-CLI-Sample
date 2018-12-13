@@ -38,10 +38,16 @@ namespace CSharpSampleApp.Services
         /// </summary>
         /// <param name="syncpointId">The Id of syncpoint.</param>
         /// <param name="folderId">The Id of folder.</param>
+        /// <param name="deleted">If set then return deleted files.</param>
         /// <returns></returns>
-        public static Folder GetFolder(long syncpointId, long folderId)
+        public static Folder GetFolder(long syncpointId, long folderId, bool deleted = false)
         {
-            return HttpGet<Folder>(GetUrl(syncpointId, folderId, "active", string.Empty, FolderUrl));
+            var includes = "active";
+            if (deleted)
+            {
+                includes += ",deleted";
+            }
+            return HttpGet<Folder>(GetUrl(syncpointId, folderId, includes, string.Empty, FolderUrl));
         }
 
         /// <summary>
