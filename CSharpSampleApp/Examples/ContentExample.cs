@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using Newtonsoft.Json;
 
 using CSharpSampleApp.Entities;
+using CSharpSampleApp.Entities.Tagging;
 using CSharpSampleApp.Services;
 using CSharpSampleApp.Services.Download;
 using CSharpSampleApp.Services.Upload;
@@ -19,7 +21,7 @@ namespace CSharpSampleApp.Examples
     {
         private static SyncPoint _currentSyncpoint;
         private static Folder _currentFolder;
-
+        
         private static Exception _lastException;
         private static readonly AutoResetEvent UploadFinished = new AutoResetEvent(false);
         private static User _oldOwner;
@@ -47,9 +49,9 @@ namespace CSharpSampleApp.Examples
             CreateFolder();
             UploadFile(localFilePath, UploadMode.Simple);
             DownloadFile(localFilePath);
-            RemoveFile(localFilePath);
-            RemoveFolder();
-            ChangeOwnerOfSyncpoint(ConfigurationHelper.NewSyncpointOwnerEmail);
+            RemoveFilePermanently(localFilePath);
+            RemoveFolderPermanently();
+           // ChangeOwnerOfSyncpoint(ConfigurationHelper.NewSyncpointOwnerEmail);
         }
 
         /*
@@ -74,8 +76,8 @@ namespace CSharpSampleApp.Examples
             CreateFolder();
             UploadFile(localFilePath, UploadMode.Chunked);
             DownloadFile(localFilePath);
-            RemoveFile(localFilePath);
-            RemoveFolder();
+            RemoveFilePermanently(localFilePath);
+            RemoveFolderPermanently();
         }
 
         /*
@@ -98,10 +100,112 @@ namespace CSharpSampleApp.Examples
             CreateFolder();
             UploadFile(localFilePath, UploadMode.Simple);
             DownloadFile(localFilePath);
-            RemoveFile(localFilePath);
-            RemoveFolder();
+            RemoveFilePermanently(localFilePath);
+            RemoveFolderPermanently();
 
             ApiContext.OnBehalfOfUser = null;
+        }
+
+        /*
+       * Content - Rename Folder
+       * - Creating a Syncpoint to allow uploads/downloads to folders
+       * - Creating a folder
+       * - Renaming the folder
+       * - Removing the folder
+       */
+        public static void ExecuteRenameFolder()
+        {
+            if (!ValidateConfigurationForOrdinarySample()) return;
+            
+            CreateSyncpoint();
+
+            if (!ApiContext.HasStorageEndpoint) return;
+
+            CreateFolder();
+            RenameFolder();
+            RemoveFolderPermanently();
+        }
+
+        /*
+      * Content - Simple
+      * - Creating a Syncpoint to allow uploads/downloads to folders
+      * - Creating a folder
+      * - Uploading a file into the folder
+      * - Downloading the uploaded file        
+      * - Removing the uploaded file
+      * - Removing the folder
+      * - Changing owner of the syncpoint
+      */
+        public static void ExecuteRenameFile()
+        {
+            if (!ValidateConfigurationForOrdinarySample()) return;
+
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+
+            CreateSyncpoint();
+
+            if (!ApiContext.HasStorageEndpoint) return;
+
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Simple);
+            var renamedFile = RenameFile(localFilePath);
+            RemoveFilePermanently(renamedFile);
+            RemoveFolderPermanently();
+        }
+
+        /*
+        * Content - Folder Tagging
+        * - Creating a Syncpoint to allow uploads/downloads to folders
+        * - Creating a folder
+        * - Add tags for folder
+        * - Gets tags for folder
+        * - Deleting tags for folder
+        * - Removing the folder
+        */
+        public static void ExecuteFolderTagging()
+        {
+            if (!ValidateConfigurationForOrdinarySample()) return;
+
+            CreateSyncpoint();
+
+            if (!ApiContext.HasStorageEndpoint) return;
+
+            CreateFolder();
+            PostTagsForFolder();
+            GetTagsForFolder();
+            DeleteTagsForFolder();
+            RemoveFolderPermanently();
+        }
+
+        /*
+        * Content - File Tagging
+        * - Creating a Syncpoint to allow uploads/downloads to folders
+        * - Creating a folder
+        * - Upload a file
+        * - Add tags for file
+        * - Gets tags for file
+        * - Deleting tags for file
+        * - Removing the file
+        * - Removing the folder
+        */
+        public static void ExecuteFileTagging()
+        {
+            if (!ValidateConfigurationForOrdinarySample()) return;
+
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+
+            CreateSyncpoint();
+
+            if (!ApiContext.HasStorageEndpoint) return;
+
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Simple);
+            var file = GetCurrentFile(localFilePath);
+            PostTagsForFile(file);
+            GetTagsForFile(file);
+            DeleteTagsForFile(file);
+            RemoveFilePermanently(localFilePath);
+            RemoveFolderPermanently();
         }
 
         /*
@@ -128,14 +232,14 @@ namespace CSharpSampleApp.Examples
 
             // reset OAuth for eDiscovery administrator
             ApiContext.SyncplicityUserAppToken = ConfigurationHelper.eDiscoveryAdminToken;
-            OAuth.OAuth.Authenticate();
+            ApiGateway.Authenticate();
 
             Console.WriteLine("eDiscovery: putting the data custodian user on legal hold for 30 days...");
             LegalHoldsService.PutOnLegalHold(custodian.Id, TimeSpan.FromDays(30));
 
             // reset OAuth for data custodian user
             ApiContext.SyncplicityUserAppToken = ConfigurationHelper.DataCustodianUserToken;
-            OAuth.OAuth.Authenticate();
+            ApiGateway.Authenticate();
 
             Console.WriteLine("User: creating a content...");
             CreateSyncpoint();
@@ -151,7 +255,7 @@ namespace CSharpSampleApp.Examples
 
             // reset OAuth for eDiscovery administrator but act On-Behalf-Of the data custodian user
             ApiContext.SyncplicityUserAppToken = ConfigurationHelper.eDiscoveryAdminToken;
-            OAuth.OAuth.Authenticate();
+            ApiGateway.Authenticate();
             ApiContext.OnBehalfOfUser = custodian.Id;
             
             // go beyond the user possibilities and download earlier deleted and legally held content
@@ -220,23 +324,35 @@ namespace CSharpSampleApp.Examples
 
             if (string.IsNullOrWhiteSpace(ConfigurationHelper.DownloadFolder)) yield return "downloadDirectory is not specified";
         }
-
-        private static void RemoveFolder()
+        
+        private static void RemoveFolderPermanently()
         {
-            SyncService.RemoveFolder(_currentFolder.SyncpointId, _currentFolder.FolderId, false);
-        }
+            if (_currentFolder != null)
+            {
+                SyncService.RemoveFolder(_currentFolder.SyncpointId, _currentFolder.FolderId, removePermanently: false);
+                SyncService.RemoveFolder(_currentFolder.SyncpointId, _currentFolder.FolderId, removePermanently: true);
+                return;
+            }
 
-        private static void RemoveFile(string localFilePath)
-        {
-            var fileToRemove = GetCurrentFile(localFilePath);
-            SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, false);
+            Console.WriteLine("No folder to remove.");
         }
-
+        
         private static void RemoveFilePermanently(string localFilePath)
         {
             var fileToRemove = GetCurrentFile(localFilePath);
-            SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, false);
-            SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, true);
+            RemoveFilePermanently(fileToRemove);
+        }
+
+        private static void RemoveFilePermanently(File fileToRemove)
+        {
+            if (fileToRemove != null)
+            {
+                SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, removePermanently: false);
+                SyncService.RemoveFile(fileToRemove.SyncpointId, fileToRemove.LatestVersionId, removePermanently: true);
+                return;
+            }
+
+            Console.WriteLine("No file to remove.");
         }
 
         private static void DownloadFile(string localFilePath, bool deleted = false)
@@ -270,8 +386,13 @@ namespace CSharpSampleApp.Examples
         {
             // Refresh folder info
             _currentFolder = SyncService.GetFolder(_currentSyncpoint.Id, _currentFolder.FolderId, deleted);
-            var currentFile =
-                _currentFolder.Files.First(x => x.Filename == Path.GetFileName(localFilePath));
+            var currentFile = _currentFolder.Files.First(x => x.Filename == Path.GetFileName(localFilePath));
+
+            if (currentFile.FolderId != _currentFolder.FolderId)
+            {
+                currentFile.FolderId = _currentFolder.FolderId;
+            }
+
             return currentFile;
         }
 
@@ -324,7 +445,7 @@ namespace CSharpSampleApp.Examples
             var newSyncPoint = new SyncPoint
             {
                 Name = ConfigurationHelper.SyncpointName + _random.Next(),
-                Type = SyncPointType.Custom,
+                Type = SyncPointType.SyncplicityDrive,
                 Path = @"C:\Syncplicity",
                 StorageEndpointId = storageEndpoint.Id,
                 Mapped = true,
@@ -401,6 +522,57 @@ namespace CSharpSampleApp.Examples
                 $"Finished Folder Creation. Created new Folder {createdFolders[0].Name} with Id: {createdFolders[0].FolderId}");
         }
 
+        private static void RenameFolder()
+        {
+            try
+            {
+                string folderNewName = $"{ConfigurationHelper.FolderName}{_random.Next()}";
+
+                Console.WriteLine();
+                Console.WriteLine("Start Folder Rename...");
+                Console.WriteLine($"Current Folder Name: {_currentFolder.Name} will be replaced with: {folderNewName}");
+
+                _currentFolder.Name = folderNewName;
+                _currentFolder.Status = FolderStatus.MovedOrRenamed;
+
+                var renamedFolder = SyncService.UpdateFolder(_currentFolder.SyncpointId, _currentFolder);
+
+                Console.WriteLine($"Finished Folder Rename. Renamed Folder {renamedFolder.Name} with Id: {renamedFolder.FolderId}");
+            }
+            catch (Exception)
+            {
+                RemoveFolderPermanently();
+                throw;
+            }
+        }
+        
+        private static File RenameFile(string localFilePath)
+        {
+            try
+            {
+                var fileToRename = GetCurrentFile(localFilePath);
+                var fileNewName = Path.GetFileName(ConfigurationHelper.UploadedFileRenamed);
+
+                Console.WriteLine();
+                Console.WriteLine("Start File Rename...");
+                Console.WriteLine($"Current File Name: {fileToRename.Filename} will be replaced with: {fileNewName}");
+
+                fileToRename.Filename = fileNewName; 
+                fileToRename.Status = FileStatus.MovedOrRenamed;
+
+                var renamedFile = SyncService.RenameFile(_currentFolder.SyncpointId, fileToRename);
+
+                Console.WriteLine($"Finished File Rename. Renamed File {renamedFile.Filename} with Id: {renamedFile.FileId}");
+
+                return renamedFile;
+            }
+            catch (Exception)
+            {
+                RemoveFilePermanently(localFilePath);
+                throw;
+            }
+        }
+        
         private static void UploadFile(string localFilePath, UploadMode mode)
         {
             if (_currentFolder == null)
@@ -454,6 +626,7 @@ namespace CSharpSampleApp.Examples
 
             Console.WriteLine($"File {localFilePath} uploaded successfully to folder {_currentFolder.Name}.");
         }
+
         private static void UploadCallBack(IAsyncResult result)
         {
             try
@@ -500,6 +673,140 @@ namespace CSharpSampleApp.Examples
 
             Console.WriteLine();
             Console.WriteLine("Owner of syncpoint has been changed...");
+        }
+
+        private static void PostTagsForFolder()
+        {
+            if (_currentFolder == null)
+            {
+                return;
+            }
+
+            try
+            {
+                Console.WriteLine();
+                Console.WriteLine("Start adding Tags to folder...");
+
+                var tags = JsonConvert.DeserializeObject<List<Tag>>(ConfigurationHelper.TagCollection);
+                var postedTags = TagService.PostTagsForFolder(_currentFolder.SyncpointId, _currentFolder.FolderId, tags);
+
+                Console.WriteLine($"Finished adding Tags to Folder {_currentFolder.Name} in Syncpoint {_currentFolder.SyncpointId}.");
+                Console.WriteLine($"{JsonConvert.SerializeObject(postedTags)}");
+            }
+            catch (Exception)
+            {
+                RemoveFolderPermanently();
+                throw;
+            }
+        }
+
+        private static void GetTagsForFolder()
+        {
+            if (_currentFolder == null)
+            {
+                return;
+            }
+
+            try
+            {
+                Console.WriteLine();
+                Console.WriteLine("Start getting folder Tags...");
+
+                var tags = TagService.GetTagsForFolder(_currentFolder.SyncpointId, _currentFolder.FolderId);
+
+                Console.WriteLine($"Finished getting Tags for Folder {_currentFolder.Name} in Syncpoint {_currentFolder.SyncpointId}. Tags count: {tags.Count}");
+                Console.WriteLine($"{JsonConvert.SerializeObject(tags)}");
+            }
+            catch (Exception)
+            {
+                RemoveFolderPermanently();
+                throw;
+            }
+        }
+
+        private static void DeleteTagsForFolder()
+        {
+            if (_currentFolder == null)
+            {
+                return;
+            }
+
+            try
+            {
+                Console.WriteLine();
+                Console.WriteLine("Start deleting Tags...");
+
+                var tags = JsonConvert.DeserializeObject<List<Tag>>(ConfigurationHelper.TagCollection);
+                TagService.DeleteTagsForFolder(_currentFolder.SyncpointId, _currentFolder.FolderId, tags);
+
+                Console.WriteLine($"Finished deleting Tags of Folder {_currentFolder.Name} in Syncpoint {_currentFolder.SyncpointId}.");
+            }
+            catch (Exception)
+            {
+                RemoveFolderPermanently();
+                throw;
+            }
+        }
+
+        private static void PostTagsForFile(File file)
+        {
+            try
+            {
+                Console.WriteLine();
+                Console.WriteLine("Start adding Tags to file...");
+
+                var tags = JsonConvert.DeserializeObject<List<Tag>>(ConfigurationHelper.TagCollection);
+                var postedTags = TagService.PostTagsForFile(file.SyncpointId, file.FileId, tags);
+
+                Console.WriteLine($"Finished adding Tags to File {file.Filename} in Syncpoint {file.SyncpointId}.");
+                Console.WriteLine($"{JsonConvert.SerializeObject(postedTags)}");
+            }
+            catch (Exception)
+            {
+                RemoveFilePermanently(file);
+                RemoveFolderPermanently();
+                throw;
+            }
+        }
+
+        private static void GetTagsForFile(File file)
+        {
+            try
+            {
+                Console.WriteLine();
+                Console.WriteLine("Start getting Tags for file...");
+
+                var tags = TagService.GetTagsForFile(file.SyncpointId, file.FileId);
+
+                Console.WriteLine($"Finished adding Tags to File {file.Filename} in Syncpoint {file.SyncpointId}.");
+                Console.WriteLine($"{JsonConvert.SerializeObject(tags)}");
+            }
+            catch (Exception)
+            {
+                RemoveFilePermanently(file);
+                RemoveFolderPermanently();
+                throw;
+            }
+        }
+
+        private static void DeleteTagsForFile(File file)
+        {
+            try
+            {
+                Console.WriteLine();
+                Console.WriteLine("Start deleting Tags for file...");
+
+                var tags = JsonConvert.DeserializeObject<List<Tag>>(ConfigurationHelper.TagCollection);
+                TagService.DeleteTagsForFile(file.SyncpointId, file.FileId, tags);
+
+                Console.WriteLine($"Finished deleting Tags for File {file.Filename} in Syncpoint {file.SyncpointId}.");
+            }
+            catch (Exception)
+            {
+                RemoveFilePermanently(file);
+                RemoveFolderPermanently();
+                throw;
+            }
         }
 
         private enum UploadMode

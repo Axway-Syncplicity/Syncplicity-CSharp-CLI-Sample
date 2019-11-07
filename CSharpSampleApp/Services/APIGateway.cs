@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Configuration;
 using System.IO;
 using System.Net;
@@ -29,7 +29,7 @@ namespace CSharpSampleApp.Services
         public static string SyncpointAPIUrlPrefix => GolGateway.BaseApiEndpointUrl + "/syncpoint/";
 
         /// <summary>
-        /// Gets or sets the base url for auth endpoint.
+        /// Gets or sets the base url for auth endpoint.b
         /// </summary>
         protected static string ProvisioningAPIUrlPrefix => GolGateway.BaseApiEndpointUrl + "/provisioning/";
 
@@ -54,45 +54,13 @@ namespace CSharpSampleApp.Services
         /// Applies the current credentials to the request.
         /// </summary>
         /// <param name="request">The request object.</param>
-        /// <param name="isMachineAuthentication">Set to true if machine authentication is required instead of regular user authentication.
-        /// As a result different headers will be used</param>
         /// <returns>The current request.</returns>
-        private static HttpWebRequest ApplyConsumerCredentials(HttpWebRequest request, bool isFirstAuthCall = false, bool isMachineAuthentication = false, string bearer = null)
+        private static HttpWebRequest ApplyBearerAuthorization(HttpWebRequest request)
         {
-            // If this is the first OAuth authentication call, then we don't have an OAuth Bearer token (access token).
-            // So we will use the Application Key and Application Secret as the consumer credentials for the application.
-            // However, once we've successfully connected to the api gateway for the first time,
-            // we will receive an OAuth access token (Bearer token).
-            // We will need to manage the bearer token and use it for subsequent calls to the API gateway.
-            if (isFirstAuthCall)
-            {
-                var basicAuthRawToken = $"{ConfigurationHelper.ApplicationKey}:{ConfigurationHelper.ApplicationSecret}";
-                var basicAuthToken = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(basicAuthRawToken));
-                Console.WriteLine($"[Header] Authorization: Basic {basicAuthToken} (Base64 encoded combination of App key and App secret)");
-                request.Headers.Add("Authorization", $"Basic {basicAuthToken}");
-
-                if (isMachineAuthentication)
-                {
-                    if (!ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled)
-                    {
-                        throw new ConfigurationErrorsException("machineToken key value should be defined in configuration");
-                    }
-                    Console.WriteLine($"[Header] Sync-Machine-Token: {ConfigurationHelper.SyncplicityMachineToken}");
-                    request.Headers.Add("Sync-Machine-Token", ConfigurationHelper.SyncplicityMachineToken);
-                }
-                else
-                {
-                    Console.WriteLine($"[Header] Sync-App-Token: {ApiContext.SyncplicityUserAppToken}");
-                    request.Headers.Add("Sync-App-Token", ApiContext.SyncplicityUserAppToken);
-                }
-            }
-            else
-            {
-                Console.WriteLine($"[Header] AppKey: {ConfigurationHelper.ApplicationKey}");
-    			Console.WriteLine($"[Header] Authorization: Bearer {ApiContext.AccessToken}");
-                request.Headers.Add("AppKey", ConfigurationHelper.ApplicationKey);
-                request.Headers.Add("Authorization", $"Bearer {bearer ?? ApiContext.AccessToken}");
-            }
+            Console.WriteLine($"[Header] AppKey: {ConfigurationHelper.ApplicationKey}");
+            Console.WriteLine($"[Header] Authorization: Bearer {ApiContext.AccessToken}");
+            request.Headers.Add("AppKey", ConfigurationHelper.ApplicationKey);
+            request.Headers.Add("Authorization", $"Bearer {ApiContext.AccessToken}");
 
             if (ApiContext.OnBehalfOfUser.HasValue)
             {
@@ -101,6 +69,38 @@ namespace CSharpSampleApp.Services
             }
 
             return request;
+        }
+
+        /// <summary>
+        /// Applies the current credentials to the request.
+        /// </summary>
+        /// <param name="request">The request object.</param>
+        /// <param name="isMachineAuthentication">Set to true if machine authentication is required instead of regular user authentication.
+        /// As a result different headers will be used</param>
+        /// <returns>The current request.</returns>
+        private static TokenResponse CreateToken(string body, Action<HttpWebRequest> prepareRequest = null)
+        {
+            // If this is the first OAuth authentication call, then we don't have an OAuth Bearer token (access token).
+            // So we will use the Application Key and Application Secret as the consumer credentials for the application.
+            // However, once we've successfully connected to the api gateway for the first time,
+            // we will receive an OAuth access token (Bearer token).
+            // We will need to manage the bearer token and use it for subsequent calls to the API gateway.
+
+            const string contentType = "application/x-www-form-urlencoded";
+
+            var request = CreateRequest("POST", GolGateway.OAuthTokenUrl);
+            var basicAuthRawToken = $"{ConfigurationHelper.ApplicationKey}:{ConfigurationHelper.ApplicationSecret}";
+            var basicAuthToken = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(basicAuthRawToken));
+            Console.WriteLine($"[Header] Authorization: Basic {basicAuthToken} (Base64 encoded combination of App key and App secret)");
+            request.Headers.Add("Authorization", $"Basic {basicAuthToken}");
+
+            prepareRequest?.Invoke(request);
+
+            request.ContentType = contentType;
+            WriteBody(request, body);
+
+            var response = ReadFirstAttemptResponse<TokenResponse>(request, out var isNeededReAuth);
+            return response;
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace CSharpSampleApp.Services
                         memoryStream.Position = 0;
 
                         var response = Encoding.UTF8.GetString(memoryStream.ToArray());
-                        Console.WriteLine("[Response] " );
+                        Console.WriteLine("[Response] ");
 
                         var pp = new JsonPrettyPrinter(new JsonPrettyPrinterPlus.JsonPrettyPrinterInternals.JsonPPStrategyContext());
                         Console.WriteLine(pp.PrettyPrint(response));
@@ -177,13 +177,13 @@ namespace CSharpSampleApp.Services
                             }
                         }
 
-                        return (T) (object) response;
+                        return (T)(object)response;
                     }
                 }
             }
             catch (WebException e)
             {
-                var response = (HttpWebResponse) e.Response;
+                var response = (HttpWebResponse)e.Response;
                 if (response == null)
                 {
                     Console.WriteLine("Response not received.");
@@ -229,7 +229,7 @@ namespace CSharpSampleApp.Services
         /// <param name="isMachineAuthentication">Set to true if machine authentication is required instead of regular user authentication.
         /// As a result different headers will be used</param>
         /// <returns>Created request.</returns>
-        private static HttpWebRequest CreateRequest(string method, string uri, bool isFirstAuthCall = false, bool isMachineAuthentication = false, string bearer = null)
+        private static HttpWebRequest CreateRequest(string method, string uri)
         {
             Console.WriteLine($"Creating {method.ToUpper()} request to {uri}");
             var request = WebRequest.Create(uri) as HttpWebRequest;
@@ -237,7 +237,7 @@ namespace CSharpSampleApp.Services
             request.Accept = JsonContentType;
             request.CookieContainer = new CookieContainer();
             request.Timeout = 30000;
-            return ApplyConsumerCredentials(request, isFirstAuthCall, isMachineAuthentication, bearer:bearer);
+            return request;
         }
 
         /// <summary>
@@ -248,8 +248,8 @@ namespace CSharpSampleApp.Services
         private static void WriteBody(WebRequest request, string body)
         {
             var pp = new JsonPrettyPrinter(new JsonPrettyPrinterPlus.JsonPrettyPrinterInternals.JsonPPStrategyContext());
-            Console.WriteLine("[Body] " );
-            Console.WriteLine( pp.PrettyPrint(body) );
+            Console.WriteLine("[Body] ");
+            Console.WriteLine(pp.PrettyPrint(body));
 
             var data = Encoding.ASCII.GetBytes(body);
             request.ContentLength = data.Length;
@@ -282,6 +282,7 @@ namespace CSharpSampleApp.Services
         {
             const string method = "GET";
             var request = CreateRequest(method, uri);
+            ApplyBearerAuthorization(request);
 
             bool isNeededReAuth;
             var response = ReadFirstAttemptResponse<T>(request, out isNeededReAuth);
@@ -292,7 +293,7 @@ namespace CSharpSampleApp.Services
 
             // We need to authenticate again.
             // Trying to do it and then re-send the initial request:
-            OAuth.OAuth.RefreshToken();
+            RefreshToken();
 
             Console.WriteLine();
             if (!ApiContext.Authenticated)
@@ -304,6 +305,7 @@ namespace CSharpSampleApp.Services
             Console.WriteLine("Authentication was successful. Trying to send GET request again for the last time.");
 
             request = CreateRequest(method, uri);
+            ApplyBearerAuthorization(request);
             response = ReadLastAttemptResponse<T>(request);
 
             return response;
@@ -320,24 +322,25 @@ namespace CSharpSampleApp.Services
         /// <param name="isMachineAuthentication">Set to true if machine authentication is required instead of regular user authentication.
         /// As a result different headers will be used</param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
-        protected static T HttpPost<T>(string uri, string body, string contentType, bool isFirstAuthCall = false, bool isMachineAuthentication = false, string bearer = null)
+        protected static T HttpPost<T>(string uri, string body, string contentType)
         {
             const string method = "POST";
-            var request = CreateRequest(method, uri, isFirstAuthCall, isMachineAuthentication, bearer: bearer);
+            var request = CreateRequest(method, uri);
+            ApplyBearerAuthorization(request);
 
             request.ContentType = contentType;
             WriteBody(request, body);
 
             bool isNeededReAuth;
             var response = ReadFirstAttemptResponse<T>(request, out isNeededReAuth);
-            if (isFirstAuthCall || !isNeededReAuth) return response;
+            if (!isNeededReAuth) return response;
 
             Console.WriteLine();
             Console.WriteLine("Trying to re-authenticate using the same credentials.");
 
             // We need to authenticate again.
             // Trying to do it and then re-send the initial request:
-            OAuth.OAuth.RefreshToken();
+            RefreshToken();
 
             Console.WriteLine();
             if (!ApiContext.Authenticated)
@@ -348,7 +351,8 @@ namespace CSharpSampleApp.Services
 
             Console.WriteLine("Authentication was successful. Trying to send POST request again for the last time.");
 
-            request = CreateRequest(method, uri, false, isMachineAuthentication);
+            request = CreateRequest(method, uri);
+            ApplyBearerAuthorization(request);
             request.ContentType = contentType;
             WriteBody(request, body);
 
@@ -371,13 +375,6 @@ namespace CSharpSampleApp.Services
             return HttpPost<T>(uri, JsonSerizalize(body), JsonContentType);
         }
 
-        protected static TResult HttpPost<TResult, TBody>(string uri, TBody body, string bearer = null)
-            where TResult : class
-            where TBody : class
-        {
-            return HttpPost<TResult>(uri, JsonSerizalize(body), JsonContentType, bearer: bearer);
-        }
-
 
         /// <summary>
         /// Create DELETE HTTP request to url return deserialized object T.
@@ -390,6 +387,7 @@ namespace CSharpSampleApp.Services
         {
             const string method = "DELETE";
             var request = CreateRequest(method, uri);
+            ApplyBearerAuthorization(request);
             if (body != null)
             {
                 request.ContentType = JsonContentType;
@@ -404,7 +402,7 @@ namespace CSharpSampleApp.Services
 
             // We need to authenticate again.
             // Trying to do it and then re-send the initial request:
-            OAuth.OAuth.RefreshToken();
+            RefreshToken();
 
             Console.WriteLine();
             if (!ApiContext.Authenticated)
@@ -416,6 +414,7 @@ namespace CSharpSampleApp.Services
             Console.WriteLine("Authentication was successful. Trying to send DELETE request again for the last time.");
 
             request = CreateRequest(method, uri);
+            ApplyBearerAuthorization(request);
             response = ReadLastAttemptResponse<T>(request);
 
             return response;
@@ -433,9 +432,10 @@ namespace CSharpSampleApp.Services
         {
             const string method = "PUT";
             var request = CreateRequest(method, uri);
+            ApplyBearerAuthorization(request);
             request.ContentType = contentType;
             WriteBody(request, body);
-            
+
             bool isNeededReAuth;
             var response = ReadFirstAttemptResponse<T>(request, out isNeededReAuth);
             if (!isNeededReAuth) return response;
@@ -445,7 +445,7 @@ namespace CSharpSampleApp.Services
 
             // We need to authenticate again.
             // Trying to do it and then re-send the initial request:
-            OAuth.OAuth.RefreshToken();
+            RefreshToken();
 
             Console.WriteLine();
             if (!ApiContext.Authenticated)
@@ -457,6 +457,7 @@ namespace CSharpSampleApp.Services
             Console.WriteLine("Authentication was successful. Trying to send PUT request again for the last time.");
 
             request = CreateRequest(method, uri);
+            ApplyBearerAuthorization(request);
             request.ContentType = contentType;
             WriteBody(request, body);
 
@@ -472,12 +473,75 @@ namespace CSharpSampleApp.Services
         /// <param name="uri">The request url.</param>
         /// <param name="body">The request body.</param>
         /// <returns>The object representation of received response or default of T if response is empty.</returns>
-        protected static T HttpPut<T>(string uri, T body) 
+        protected static T HttpPut<T>(string uri, T body)
             where T : class
         {
             return HttpPut<T>(uri, JsonSerizalize(body), JsonContentType);
         }
 
         #endregion Protected Methods
+
+        #region Public Methods
+        public static void Authenticate()
+        {
+            const string authRequestBody = "grant_type=client_credentials&scope=read%20readwrite";
+
+            var tokenResponse = CreateToken(authRequestBody, request =>
+            {
+                Console.WriteLine($"[Header] Sync-App-Token: {ApiContext.SyncplicityUserAppToken}");
+                request.Headers.Add("Sync-App-Token", ApiContext.SyncplicityUserAppToken);
+            });
+
+            ApiContext.OAuthResponse = tokenResponse;
+
+            if (ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled)
+            {
+                tokenResponse = CreateToken(authRequestBody, request =>
+                {
+                    Console.WriteLine($"[Header] Sync-Machine-Token: {ConfigurationHelper.SyncplicityMachineToken}");
+                    request.Headers.Add("Sync-Machine-Token", ConfigurationHelper.SyncplicityMachineToken);
+                });
+
+                ApiContext.MachineToken = tokenResponse.AccessToken;
+            }
+        }
+
+        public static string CreateSst(Guid storageEndpointId)
+        {
+            var authRequestBody = string.Format("grant_type={0}&token={1}&resource={2}",
+                    Uri.EscapeDataString("urn:syncplicity:oauth:grant-type:access-token"),
+                    Uri.EscapeDataString(ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled
+                        ? ApiContext.MachineToken
+                        : ApiContext.AccessToken),
+                    Uri.EscapeDataString($"urn:syncplicity:resources:storage:{storageEndpointId}"));
+
+            var tokenResponse = CreateToken(authRequestBody, request => { });
+
+            return tokenResponse.AccessToken;
+        }
+
+        /// <summary>
+        /// This call will invalidate the current oauth and any refresh-tokens
+        /// along with removing the grant of access to the application to the given user account.   
+        /// </summary>
+        public static void RevokeToken()
+        {
+
+
+            var response = HttpGet<TokenResponse>(GolGateway.OAuthRevokeTokenUrl);
+
+            // Response will/should be null for revoke
+            ApiContext.OAuthResponse = response;
+        }
+
+        public static void RefreshToken()
+        {
+
+            // Note: technically refreshToken() which uses grant_type=client_credentials
+            // is the same behavior as just authenticating authenticate() for the first time.
+            // The name is just to be explicit in the use-case
+            Authenticate();
+        }
+        #endregion
     }
 }

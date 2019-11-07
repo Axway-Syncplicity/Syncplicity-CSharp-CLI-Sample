@@ -22,12 +22,25 @@ namespace CSharpSampleApp.Services
         /// </summary>
         protected static string FolderUrl => SyncAPIUrlPrefix + "folder.svc/{0}/folder/{1}";
 
-        public static string FileUrl => SyncAPIUrlPrefix + "file.svc/{0}/file/{1}";
+        /// <summary>
+        /// Gets the url to FolderService.
+        /// </summary>
+        protected static string FolderUrlPut => SyncAPIUrlPrefix + "folder.svc/{0}/folder";
 
         /// <summary>
         /// Gets the url to FoldersService.
         /// </summary>
         protected static string FoldersUrl => SyncAPIUrlPrefix + "folders.svc/{0}/folders?virtual_path={1}";
+
+        /// <summary>
+        /// Gets the url to FileService.
+        /// </summary>
+        public static string FileUrl => SyncAPIUrlPrefix + "file.svc/{0}/file/{1}";
+
+        /// <summary>
+        /// Gets the url to FileService.
+        /// </summary>
+        public static string FileUrlPut => SyncAPIUrlPrefix + "file.svc/{0}/file";
 
         #endregion Protected Properties
 
@@ -84,6 +97,17 @@ namespace CSharpSampleApp.Services
         }
 
         /// <summary>
+        /// Renames folder in syncpoint
+        /// </summary>
+        /// <param name="syncpointId">The Id of syncpoint</param>
+        /// <param name="folder">The folder to rename</param>
+        /// <returns></returns>
+        public static Folder UpdateFolder(long syncpointId, Folder folder)
+        {
+            return HttpPut(string.Format(FolderUrlPut, syncpointId), folder);
+        }
+
+        /// <summary>
         /// Creates new folder into the root folder of syncpoint.
         /// </summary>
         /// <param name="syncpoint">The syncpoint object.</param>
@@ -103,6 +127,29 @@ namespace CSharpSampleApp.Services
         public static Folder[] CreateFolders(Folder folder, Folder[] folders)
         {
             return CreateFolders(folder.SyncpointId, folder.FolderId, folders);
+        }
+
+        /// <summary>
+        /// Returns a file by given syncpoint id and file id
+        /// </summary>
+        /// <param name="syncpointId">The Id of syncpoint</param>
+        /// <param name="fileId">The Id of file</param>
+        /// <returns></returns>
+        public static File GetFile(long syncpointId, long fileId)
+        {
+            return HttpGet<File>(string.Format(FileUrl, syncpointId, fileId));
+        }
+
+
+        /// <summary>
+        /// Renames file in folder
+        /// </summary>
+        /// <param name="syncpointId">The Id of syncpoint</param>
+        /// <param name="file">The file to rename</param>
+        /// <return></returns>
+        public static File RenameFile(long syncpointId, File file)
+        {
+            return HttpPut(string.Format(FileUrlPut, syncpointId), file);
         }
 
         #endregion

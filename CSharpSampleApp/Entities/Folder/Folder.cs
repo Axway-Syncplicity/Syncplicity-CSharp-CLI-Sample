@@ -26,6 +26,9 @@ namespace CSharpSampleApp.Entities
         [DataMember(EmitDefaultValue = false, Order = 6)]
         public Folder[] Folders;
 
+        [DataMember(EmitDefaultValue = false, Order = 7)]
+        public long? ParentFolderId;
+
         /// <summary>
         /// Returns a logging-friendly string
         /// </summary>
