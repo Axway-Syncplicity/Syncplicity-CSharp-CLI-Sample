@@ -51,7 +51,7 @@ namespace CSharpSampleApp.Examples
             DownloadFile(localFilePath);
             RemoveFilePermanently(localFilePath);
             RemoveFolderPermanently();
-           // ChangeOwnerOfSyncpoint(ConfigurationHelper.NewSyncpointOwnerEmail);
+            ChangeOwnerOfSyncpoint(ConfigurationHelper.NewSyncpointOwnerEmail);
         }
 
         /*
