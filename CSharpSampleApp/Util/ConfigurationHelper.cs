@@ -98,6 +98,31 @@ namespace CSharpSampleApp.Util
         /// C:\\Temp\foo.txt
         /// </example>
         public static string UploadFileLarge => ConfigurationManager.AppSettings.Get("uploadFileLarge");
+        
+        /// <summary>
+        /// Enter the local path to a small/large file that is readable and able to be uploaded.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Ensure there is a non-zero amount bytes in the file as 0 length files will not upload properly.
+        /// The file size should not exceed 5 Mb. Larger files should use chunked upload.
+        /// </para>
+        /// <para>
+        /// Both full and relative paths are supported. Note: relative paths are resolved from the output .exe file.
+        /// On Windows, use \\ instead of \ to denote path separators.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// C:\\Temp\foo.txt
+        /// </example>
+        public static string UploadedFileRenamed => ConfigurationManager.AppSettings.Get("uploadedFileRenamed");
+
+        /// <summary>
+        /// Sample tag collection. Could be replaced by custom tag entitiy using ~\Entities\Tagging\Tag.cs
+        /// </summary>
+        public static string TagCollection => ConfigurationManager.AppSettings.Get("tagCollection");
+
+        public static bool UseSecureSessionToken => Convert.ToBoolean(ConfigurationManager.AppSettings.Get("useSecureSessionToken"));
 
         /// <summary>
         /// Default group name used for creating user groups
@@ -157,7 +182,7 @@ namespace CSharpSampleApp.Util
         /// <summary>
         /// Machine ID
         /// </summary>
-        public static Guid MachineId => Guid.Parse (GetSettingsValueWithoutPlaceholder("machineId", "REPLACE_WITH_MACHINE_ID"));
+        public static Guid MachineId => Guid.Parse(GetSettingsValueWithoutPlaceholder("machineId", "REPLACE_WITH_MACHINE_ID"));
 
         /// <summary>
         /// Machine token 
@@ -206,5 +231,5 @@ namespace CSharpSampleApp.Util
             var st = ConfigurationManager.AppSettings.Get(settingKey);
             return st == settingsValuePlaceholder ? string.Empty : st;
         }
-    }   
+    }
 }

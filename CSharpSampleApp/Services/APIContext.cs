@@ -1,6 +1,4 @@
 ﻿using System;
-
-using CSharpSampleApp.OAuth;
 using CSharpSampleApp.Util;
 
 namespace CSharpSampleApp.Services

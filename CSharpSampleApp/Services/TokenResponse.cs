@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
-namespace CSharpSampleApp.OAuth
+namespace CSharpSampleApp.Services
 {
     [DataContract]
     public class TokenResponse

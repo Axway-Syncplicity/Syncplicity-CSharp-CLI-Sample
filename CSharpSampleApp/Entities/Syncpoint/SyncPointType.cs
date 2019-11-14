@@ -24,6 +24,12 @@ namespace CSharpSampleApp.Entities
         Favorites = 5,
 
         [EnumMember]
-        Custom = 6
+        Custom = 6,
+        
+        [EnumMember]
+        Private = 7,
+
+        [EnumMember]
+        SyncplicityDrive = 8
     }
 }

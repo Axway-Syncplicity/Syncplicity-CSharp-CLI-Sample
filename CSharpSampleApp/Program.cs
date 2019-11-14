@@ -47,7 +47,7 @@ namespace CSharpSampleApp
 
                 GolGateway.LoadRols(ConfigurationHelper.OwnerEmail);
 
-                OAuth.OAuth.Authenticate();
+                ApiGateway.Authenticate();
 
                 Console.WriteLine();
 
@@ -79,12 +79,32 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteChunked();
                 Console.WriteLine();
+                Console.WriteLine("Chunked upload part is completed. Press enter to continue to content rename folder example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteRenameFolder();
+                Console.WriteLine();
+                Console.WriteLine("Chunked upload part is completed. Press enter to continue to content rename file example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteRenameFile();
+                Console.WriteLine();
                 Console.WriteLine("Chunked upload part is completed. Press enter to continue to content search example.");
                 Console.ReadLine();
 
                 SearchExample.Execute();
                 Console.WriteLine();
-                Console.WriteLine("Search part is completed. Press enter to continue to file upload on behalf of another user example.");
+                Console.WriteLine("Search part is completed. Press enter to continue to folder tagging example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteFolderTagging();
+                Console.WriteLine();
+                Console.WriteLine("Folder tagging part is completed. Press enter to continue to file tagging example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteFileTagging();
+                Console.WriteLine();
+                Console.WriteLine("File tagging part is completed. Press enter to continue to file tagging  on behalf of another user example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteOnBehalfOf();
@@ -93,7 +113,6 @@ namespace CSharpSampleApp
                 Console.ReadLine();
 
                 ContentExample.ExecuteLegalHold();
-
                 Console.WriteLine();
                 Console.WriteLine("Content part is completed. Press enter to exit...");
                 Console.ReadLine();

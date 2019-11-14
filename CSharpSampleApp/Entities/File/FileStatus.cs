@@ -21,6 +21,9 @@ namespace CSharpSampleApp.Entities
         Ignored = 4,
 
         [EnumMember]
-        ConfirmedRemoved = 5
+        ConfirmedRemoved = 5,
+
+        [EnumMember]
+        MovedOrRenamed = 6
     }
 }

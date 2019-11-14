@@ -126,10 +126,18 @@ namespace CSharpSampleApp.Services.Download
                 throw new ArgumentException("Invalid StorageEndpoint Urls");
 
             _downloadUrl = string.Format(DownloadUlrFormat, storageEndpoint.Urls[0].Url);
-            _sessionKey = string.Format(SessionKeyFormat,
-                ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled
-                    ? ApiContext.MachineToken
-                    : ApiContext.AccessToken);
+
+            if (ConfigurationHelper.UseSecureSessionToken)
+            {
+                _sessionKey = string.Format(SessionKeyFormat, ApiGateway.CreateSst(storageEndpoint.Id));
+            }
+            else
+            {
+                _sessionKey = string.Format(SessionKeyFormat,
+                    ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled
+                        ? ApiContext.MachineToken
+                        : ApiContext.AccessToken);
+            }
 
             Debug.WriteLine($"Download Url: {_downloadUrl}");
             Debug.WriteLine($"Session Key: {_sessionKey}");

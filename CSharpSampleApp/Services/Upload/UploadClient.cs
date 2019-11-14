@@ -14,7 +14,7 @@ namespace CSharpSampleApp.Services.Upload
 {
     public class UploadClient
     {
-        private const string DownloadUlrFormat = "{0}/v2/mime/files";
+        private const string UploadUlrFormat = "{0}/v2/mime/files";
         private const string SessionKeyFormat = "Bearer {0}";
         private const int MaxBufferSize = 8 * 1024;
         private const HttpStatusCode ResumeIncompleteStatusCode = (HttpStatusCode)308;
@@ -22,22 +22,22 @@ namespace CSharpSampleApp.Services.Upload
 
         private readonly string _virtualPath;
         private readonly string _localFilePath;
-        private readonly long    _syncpointId;
+        private readonly long _syncpointId;
 
         private readonly FileInfo _fileInfo;
 
         private readonly AsyncCallback _callback;
 
-        private string  _sessionKey;
-        private string  _uploadUrl;
-        private long    _chunkSize;
-        private string  _eTag;
-        private long    _startByte;
-        private byte[]  _headerData;
-        private byte[]  _boundaryData;
+        private string _sessionKey;
+        private string _uploadUrl;
+        private long _chunkSize;
+        private string _eTag;
+        private long _startByte;
+        private byte[] _headerData;
+        private byte[] _boundaryData;
         private string _multipartBoundaryParameter;
 
-        private bool ShouldChunk {get; set; }
+        private bool ShouldChunk { get; set; }
 
         public UploadClient(Folder folder, string localFilePath, AsyncCallback finalCallback)
         {
@@ -193,7 +193,7 @@ namespace CSharpSampleApp.Services.Upload
 
                         // Send chunk data
                         chunkRequestStream.Write(Data, 0, bytesRead);
-                    } 
+                    }
                     while (true);
 
                     sha256 = bytesReadTotal > 0 ? ConvertByteArrayToHashString(chunkSha265.Hash) : "";
@@ -275,7 +275,7 @@ namespace CSharpSampleApp.Services.Upload
         {
             var fullUploadUrl = $"{_uploadUrl}?filepath={HttpUtility.UrlEncode(_virtualPath)}";
 
-            var request = (HttpWebRequest) WebRequest.Create(fullUploadUrl);
+            var request = (HttpWebRequest)WebRequest.Create(fullUploadUrl);
 
             request.KeepAlive = true;
             request.Timeout = int.MaxValue;
@@ -403,11 +403,19 @@ namespace CSharpSampleApp.Services.Upload
             if (storageEndpoint.Urls == null || storageEndpoint.Urls.Length == 0)
                 throw new ArgumentException("Invalid StorageEndpoint Urls");
 
-            _uploadUrl = string.Format(DownloadUlrFormat, storageEndpoint.Urls[0].Url);
-            _sessionKey = string.Format(SessionKeyFormat,
-                ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled
-                    ? ApiContext.MachineToken
-                    : ApiContext.AccessToken);
+            _uploadUrl = string.Format(UploadUlrFormat, storageEndpoint.Urls[0].Url);
+
+            if (ConfigurationHelper.UseSecureSessionToken)
+            {
+                _sessionKey = string.Format(SessionKeyFormat, ApiGateway.CreateSst(storageEndpoint.Id));
+            }
+            else
+            {
+                _sessionKey = string.Format(SessionKeyFormat,
+                    ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled
+                        ? ApiContext.MachineToken
+                        : ApiContext.AccessToken);
+            }
 
             Debug.WriteLine($"Upload Url: {_uploadUrl}");
             Debug.WriteLine($"Session Key: {_sessionKey}");
