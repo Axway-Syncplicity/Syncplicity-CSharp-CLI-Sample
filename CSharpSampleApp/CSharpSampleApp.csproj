@@ -81,6 +81,7 @@
     <Compile Include="Entities\Group\Group.cs" />
     <Compile Include="Entities\Group\StorageQuota.cs" />
     <Compile Include="Entities\Link\Link.cs" />
+    <Compile Include="Entities\Link\LinkData.cs" />
     <Compile Include="Entities\Link\LinkUsage.cs" />
     <Compile Include="Entities\PolicySet\EntitySetType.cs" />
     <Compile Include="Entities\PolicySet\PolicySet.cs" />
@@ -102,6 +103,7 @@
     <Compile Include="Entities\Policy\GeolocationPrivacyPolicy.cs" />
     <Compile Include="Entities\Policy\HomeDirectoryPolicy.cs" />
     <Compile Include="Entities\Policy\IncludeOwnerInFolderNamePolicy.cs" />
+    <Compile Include="Entities\Policy\IrmRoleType.cs" />
     <Compile Include="Entities\Policy\MobileDataSyncLimit.cs" />
     <Compile Include="Entities\Policy\MobileSyncLimitsPolicy.cs" />
     <Compile Include="Entities\Policy\MobileSyncPolicy.cs" />
@@ -164,6 +166,8 @@
     <Compile Include="Examples\SearchExample.cs" />
     <Compile Include="Examples\Search\PagedSearchResultEnumerable.cs" />
     <Compile Include="Examples\Search\SearchResultsMergingEnumerable.cs" />
+    <Compile Include="Services\LinkService.cs" />
+    <Compile Include="Services\LinksService.cs" />
     <Compile Include="Services\TokenResponse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -203,6 +207,9 @@
     <Content Include="Resources\10MB.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\Example.xlsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Resources\Readme.md" />
   </ItemGroup>
   <ItemGroup>

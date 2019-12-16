@@ -10,7 +10,7 @@ namespace CSharpSampleApp.Entities
         public string Token;
 
         [DataMember(EmitDefaultValue = false, Order = 1)]
-        public int SyncPointId;
+        public long SyncPointId;
 
         [DataMember(EmitDefaultValue = false, Order = 2)]
         public string VirtualPath;
@@ -53,5 +53,23 @@ namespace CSharpSampleApp.Entities
 
         [DataMember(EmitDefaultValue = false, Order = 21)]
         public string ThumbnailName;
+
+        [DataMember(EmitDefaultValue = false, Order = 22)]
+        public ShareLinkExpirationPolicy LinkExpirationPolicy;
+
+        [DataMember(EmitDefaultValue = false, Order = 23)]
+        public ShareLinkPasswordProtectedPolicy PasswordProtectPolicy;
+
+        [DataMember(EmitDefaultValue = false, Order = 24)]
+        public int RolId;
+
+        [DataMember(EmitDefaultValue = false, Order = 25)]
+        public ShareLinkPolicy SharedLinkPolicy;
+
+        [DataMember(EmitDefaultValue = false, Order = 26)]
+        public bool IsIrmProtected;
+
+        [DataMember(EmitDefaultValue = false, Order = 27)]
+        public IrmRoleType IrmRoleType;
     }
 }

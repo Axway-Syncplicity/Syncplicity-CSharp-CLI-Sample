@@ -79,17 +79,42 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteChunked();
                 Console.WriteLine();
-                Console.WriteLine("Chunked upload part is completed. Press enter to continue to content rename folder example.");
+                Console.WriteLine("Chunked upload part is completed. Press enter to continue to create IRM shared links example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteLinksPost();
+                Console.WriteLine();
+                Console.WriteLine("Create a shared link part is completed. Press enter to continue to Get shared file links example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteLinksGet();
+                Console.WriteLine();
+                Console.WriteLine("Get shared file links part is completed. Press enter to continue to Get a shared file link metadata example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteLinkTokenGet();
+                Console.WriteLine();
+                Console.WriteLine("Get shared file links part is completed. Press enter to continue to Update a shared file link example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteLinkTokenPut();
+                Console.WriteLine();
+                Console.WriteLine("Update a shared file link part is completed. Press enter to continue to Delete a shared file link example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteLinkTokenDelete();
+                Console.WriteLine();
+                Console.WriteLine("Delete a shared file link part is completed. Press enter to continue to rename folder example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteRenameFolder();
                 Console.WriteLine();
-                Console.WriteLine("Chunked upload part is completed. Press enter to continue to content rename file example.");
+                Console.WriteLine("Rename folder part is completed. Press enter to continue to content rename file example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteRenameFile();
                 Console.WriteLine();
-                Console.WriteLine("Chunked upload part is completed. Press enter to continue to content search example.");
+                Console.WriteLine("Rename file part is completed. Press enter to continue to content search example.");
                 Console.ReadLine();
 
                 SearchExample.Execute();
