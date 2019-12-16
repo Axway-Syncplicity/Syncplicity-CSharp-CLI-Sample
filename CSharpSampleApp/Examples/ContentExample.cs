@@ -1,18 +1,17 @@
-﻿using System;
+﻿using CSharpSampleApp.Entities;
+using CSharpSampleApp.Entities.Tagging;
+using CSharpSampleApp.Services;
+using CSharpSampleApp.Services.Download;
+using CSharpSampleApp.Services.Upload;
+using CSharpSampleApp.Util;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using Newtonsoft.Json;
-
-using CSharpSampleApp.Entities;
-using CSharpSampleApp.Entities.Tagging;
-using CSharpSampleApp.Services;
-using CSharpSampleApp.Services.Download;
-using CSharpSampleApp.Services.Upload;
-using CSharpSampleApp.Util;
 using File = CSharpSampleApp.Entities.File;
 
 namespace CSharpSampleApp.Examples
@@ -21,11 +20,12 @@ namespace CSharpSampleApp.Examples
     {
         private static SyncPoint _currentSyncpoint;
         private static Folder _currentFolder;
-        
+        private static Link _currentSharedLink;
+
         private static Exception _lastException;
         private static readonly AutoResetEvent UploadFinished = new AutoResetEvent(false);
         private static User _oldOwner;
-        private static readonly Random _random = new Random(); 
+        private static readonly Random _random = new Random();
 
         /*
          * Content - Simple
@@ -116,7 +116,7 @@ namespace CSharpSampleApp.Examples
         public static void ExecuteRenameFolder()
         {
             if (!ValidateConfigurationForOrdinarySample()) return;
-            
+
             CreateSyncpoint();
 
             if (!ApiContext.HasStorageEndpoint) return;
@@ -257,10 +257,115 @@ namespace CSharpSampleApp.Examples
             ApiContext.SyncplicityUserAppToken = ConfigurationHelper.eDiscoveryAdminToken;
             ApiGateway.Authenticate();
             ApiContext.OnBehalfOfUser = custodian.Id;
-            
+
             // go beyond the user possibilities and download earlier deleted and legally held content
             Console.WriteLine("eDiscovery On-Behalf-Of User: Downloading permanently deleted content...");
             DownloadFile(localFilePath, true);
+        }
+
+        #region LinksCategory
+        /// <summary>
+        /// GET /syncpoint/links.svc/
+        /// returns collection of Links
+        /// </summary>
+        public static void ExecuteLinksGet()
+        {
+            LinksService.GetSharedLinks();
+        }
+
+        /// <summary>
+        /// POST /syncpoint/links.svc/
+        /// receives collection of Links to create
+        /// returns collection of created Links
+        /// </summary>
+        public static void ExecuteLinksPost()
+        {
+            // Prepare syncpoint, folder and file
+            var localFilePath = ConfigurationHelper.UploadFileExcel;
+            if (!ValidateConfigurationForSharedLinkSample(localFilePath))
+            {
+                return;
+            }
+            CreateSyncpoint();
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Simple);
+            
+            var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksData);
+
+            var sharedLinks = CreateSharedLinks(linkData);
+            _currentSharedLink = sharedLinks.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// GET /syncpoint/link.svc/{TOKEN}
+        /// returns Link entity that matches the token
+        /// </summary>
+        public static void ExecuteLinkTokenGet()
+        {
+            if (_currentSharedLink == null)
+            {
+                Console.WriteLine("You need to call ExecuteLinksPost() first");
+                return;
+            }
+            LinkService.GetSharedLink(_currentSharedLink.Token);
+        }
+
+        /// <summary>
+        /// PUT /syncpoint/link.svc/{TOKEN}
+        /// updates Link entity that matches the token
+        /// returns updated entity
+        /// </summary>
+        public static void ExecuteLinkTokenPut()
+        {
+            if (_currentSharedLink == null)
+            {
+                Console.WriteLine("You need to call ExecuteLinksPost() first");
+                return;
+            }
+            var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksData);
+
+            Console.WriteLine($"Shared Link BEFORE update - {JsonConvert.SerializeObject(_currentSharedLink, Formatting.Indented)}");
+            _currentSharedLink.Message = linkData.NewMessage;
+            _currentSharedLink = LinkService.UpdateSharedLink(_currentSharedLink.Token, _currentSharedLink);
+            Console.WriteLine($"Shared Link AFTER update - {JsonConvert.SerializeObject(_currentSharedLink, Formatting.Indented)}");
+        }
+
+        /// <summary>
+        /// DELETE /syncpoint/link.svc/{TOKEN}
+        /// deletes entity that matches the token
+        /// doesn't return anything
+        /// </summary>
+        public static void ExecuteLinkTokenDelete()
+        {
+            if (_currentSharedLink == null)
+            {
+                Console.WriteLine("You need to call ExecuteLinksPost() first");
+                return;
+            }
+            var localFilePath = ConfigurationHelper.UploadFileExcel;
+            LinkService.DeleteSharedLink(_currentSharedLink.Token);
+            RemoveFilePermanently(localFilePath);
+            RemoveFolderPermanently();
+        }
+
+        #endregion
+
+        private static bool ValidateConfigurationForSharedLinkSample(string localFilePath)
+        {
+            var errors = EvaluateConfigValidationRulesForOrdinarySample().ToList();
+            if (errors.Any())
+            {
+                Console.WriteLine(string.Join(Environment.NewLine, $"Error:{errors}"));
+                return false;
+            }
+
+            if (!localFilePath.EndsWith(".xlsx") && !localFilePath.EndsWith(".xls"))
+            {
+                Console.WriteLine($"Error: Unable to execute [Created Shared Links]. Supported file type extensions are \".xls\", \".xlsx\"");
+                return false;
+            }
+
+            return true;
         }
 
         private static bool ValidateConfigurationForOrdinarySample()
@@ -324,7 +429,7 @@ namespace CSharpSampleApp.Examples
 
             if (string.IsNullOrWhiteSpace(ConfigurationHelper.DownloadFolder)) yield return "downloadDirectory is not specified";
         }
-        
+
         private static void RemoveFolderPermanently()
         {
             if (_currentFolder != null)
@@ -336,7 +441,7 @@ namespace CSharpSampleApp.Examples
 
             Console.WriteLine("No folder to remove.");
         }
-        
+
         private static void RemoveFilePermanently(string localFilePath)
         {
             var fileToRemove = GetCurrentFile(localFilePath);
@@ -506,7 +611,7 @@ namespace CSharpSampleApp.Examples
                 SyncpointId = syncpointId
             };
 
-            var createdFolders = SyncService.CreateFolders(syncpointId, new [] { newFolder });
+            var createdFolders = SyncService.CreateFolders(syncpointId, new[] { newFolder });
 
             Console.WriteLine();
 
@@ -515,7 +620,7 @@ namespace CSharpSampleApp.Examples
                 Console.WriteLine("Error occurred during creating new folder. Content APIs will not be able to continue.");
                 return;
             }
-            
+
             _currentFolder = createdFolders[0];
 
             Console.WriteLine(
@@ -545,7 +650,7 @@ namespace CSharpSampleApp.Examples
                 throw;
             }
         }
-        
+
         private static File RenameFile(string localFilePath)
         {
             try
@@ -557,7 +662,7 @@ namespace CSharpSampleApp.Examples
                 Console.WriteLine("Start File Rename...");
                 Console.WriteLine($"Current File Name: {fileToRename.Filename} will be replaced with: {fileNewName}");
 
-                fileToRename.Filename = fileNewName; 
+                fileToRename.Filename = fileNewName;
                 fileToRename.Status = FileStatus.MovedOrRenamed;
 
                 var renamedFile = SyncService.RenameFile(_currentFolder.SyncpointId, fileToRename);
@@ -572,7 +677,33 @@ namespace CSharpSampleApp.Examples
                 throw;
             }
         }
-        
+
+        private static IEnumerable<Link> CreateSharedLinks(LinkData linkData)
+        {
+            Console.WriteLine("Creating Shared Links ...");
+            var links = new Link[]
+            {
+                new Link
+                {
+                    SyncPointId = _currentFolder.SyncpointId,
+                    VirtualPath = $"{_currentFolder.VirtualPath}{linkData.FileName}",
+                    LinkExpireInDays = 90,
+                    LinkExpirationPolicy = ShareLinkExpirationPolicy.Enabled,
+                    PasswordProtectPolicy = ShareLinkPasswordProtectedPolicy.Disabled,
+                    RolId = 1,
+                    SharedLinkPolicy = ShareLinkPolicy.IntendedOnly,
+                    IrmRoleType = IrmRoleType.Reader,
+                    IsIrmProtected = true,
+                    Users = new User []
+                    {
+                        new User {EmailAddress = linkData.Email }
+                    },
+                    Message = linkData.OldMessage
+                }
+            };
+            return LinksService.CreateSharedLinks(links);
+        }
+
         private static void UploadFile(string localFilePath, UploadMode mode)
         {
             if (_currentFolder == null)
@@ -639,7 +770,7 @@ namespace CSharpSampleApp.Examples
                 var response = (HttpWebResponse)e.Response;
                 if (response != null)
                     Console.WriteLine(
-                        $"Exception caught during UploadCallback: Status Code: {(int) response.StatusCode}, Status Description: {response.StatusDescription}");
+                        $"Exception caught during UploadCallback: Status Code: {(int)response.StatusCode}, Status Description: {response.StatusDescription}");
                 _lastException = e;
             }
             catch (Exception e)
@@ -667,7 +798,7 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine("Start changing the owner of syncpoint...");
 
             _oldOwner = _currentSyncpoint.Owner;
-            _currentSyncpoint.Owner = new User {EmailAddress = newOwnerEmail };
+            _currentSyncpoint.Owner = new User { EmailAddress = newOwnerEmail };
             _currentSyncpoint = SyncPointsService.PutSyncpoint(_currentSyncpoint);
             ParticipantsService.RemoveParticipants(_currentSyncpoint.Id, _oldOwner.EmailAddress);
 

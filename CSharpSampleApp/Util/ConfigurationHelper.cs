@@ -83,6 +83,24 @@ namespace CSharpSampleApp.Util
         public static string UploadFileSmall => ConfigurationManager.AppSettings.Get("uploadFileSmall");
 
         /// <summary>
+        /// Enter the local path to a file that is readable and able to be uploaded.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Ensure there is a non-zero amount bytes in the file as 0 length files will not upload properly.
+        /// The file size should not exceed 5 Mb. Larger files should use chunked upload.
+        /// </para>
+        /// <para>
+        /// Both full and relative paths are supported. Note: relative paths are resolved from the output .exe file.
+        /// On Windows, use \\ instead of \ to denote path separators.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// C:\\Temp\foo.xlsx
+        /// </example>
+        public static string UploadFileExcel => ConfigurationManager.AppSettings.Get("uploadFileExcel");
+
+        /// <summary>
         /// Enter the local path to a large file that is readable and able to be uploaded.
         /// </summary>
         /// <remarks>
@@ -121,6 +139,11 @@ namespace CSharpSampleApp.Util
         /// Sample tag collection. Could be replaced by custom tag entitiy using ~\Entities\Tagging\Tag.cs
         /// </summary>
         public static string TagCollection => ConfigurationManager.AppSettings.Get("tagCollection");
+
+        /// <summary>
+        /// Sample links data collection. Could be replaced by custom LinkData entitiy using ~\Entities\Link\LinkData.cs
+        /// </summary>
+        public static string LinksData => ConfigurationManager.AppSettings.Get("linksData");
 
         public static bool UseSecureSessionToken => Convert.ToBoolean(ConfigurationManager.AppSettings.Get("useSecureSessionToken"));
 

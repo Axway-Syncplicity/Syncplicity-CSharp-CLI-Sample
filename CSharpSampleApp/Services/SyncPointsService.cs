@@ -38,11 +38,6 @@ namespace CSharpSampleApp.Services
         protected static string SyncpointUrl => SyncpointAPIUrlPrefix + "syncpoint.svc/{0}";
 
         /// <summary>
-        /// Gets url to links service.
-        /// </summary>
-        protected static string LinksUrl => SyncpointAPIUrlPrefix + "links.svc/";
-
-        /// <summary>
         /// Gets url to syncpoint participants service.
         /// </summary>
         protected static string SyncPointParticipants => SyncpointAPIUrlPrefix + "syncpoint_participants.svc/{0}/participants";
@@ -92,16 +87,6 @@ namespace CSharpSampleApp.Services
         public static SyncPoint[] CreateSyncpoints(SyncPoint[] syncPoints)
         {
             return HttpPost(SyncpointsUrl, syncPoints);
-        }
-
-        /// <summary>
-        /// Creates shared link..
-        /// </summary>
-        /// <param name="links">The array of new links.</param>
-        /// <returns>The array of newly created links.</returns>
-        public static Link[] CreateLinks(Link[] links)
-        {
-            return HttpPost(LinksUrl, links);
         }
 
         /// <summary>
