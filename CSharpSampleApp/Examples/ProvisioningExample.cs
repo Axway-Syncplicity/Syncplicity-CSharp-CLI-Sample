@@ -26,6 +26,7 @@ namespace CSharpSampleApp.Examples
          */
         public static void Execute()
         {
+            GetCompany();
             CreateUsers();
             CreateGroup();
             AddUsersToGroup();
@@ -34,68 +35,68 @@ namespace CSharpSampleApp.Examples
             DeleteUsers();
         }
 
-        private static void DeleteUsers()
+        private static void GetCompany()
         {
-            if (_createdUsers == null)
-            {
-                return;
-            }
-
             Console.WriteLine();
-
-            // Remove created users
-            Console.WriteLine();
-            Console.WriteLine("Start Users Deletion...");
-
-            foreach (var user in _createdUsers)
-            {
-                Console.WriteLine($"\tDelete User With Email {user.EmailAddress}");
-                UsersService.DeleteUser(user.EmailAddress);
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("Finished Users Deletion.");
+            Console.WriteLine("Get Company started...");
+            CompanyService.GetCompany();
         }
 
-        private static void DeleteGroup()
+        private static void CreateUsers()
         {
-            if (_createdGroup == null)
+            var baseEmail = GenerateRandomBaseEmail();
+
+            // Create users with email typed by user + sequence number
+            Console.WriteLine();
+            Console.WriteLine("Start Users Creation...");
+
+            var usersToAdd = GenerateUsers(baseEmail);
+
+            Console.WriteLine();
+            Console.WriteLine("Calling UsersService to add users.");
+            _createdUsers = UsersService.CreateUsers(usersToAdd.ToArray());
+
+            Console.WriteLine();
+
+            if (_createdUsers == null || _createdUsers.Length == 0)
             {
-                return;
+
+                var addedCount = _createdUsers?.Length ?? 0;
+
+                Console.WriteLine($"Error Occurred During Creating Some Of Users. Number of Created Users: {addedCount}");
             }
-
-            Console.WriteLine();
-
-            // Remove the previously created group
-            Console.WriteLine();
-            Console.WriteLine($"Delete Group With Id {_createdGroup.Id}");
-            GroupsService.DeleteGroup(_createdGroup.Id);
+            else
+            {
+                Console.WriteLine("Finished Users Creation.");
+            }
         }
 
-        private static void RemoveUsersFromGroup()
+        private static void CreateGroup()
         {
-            if (_groupMemberUsers == null || _groupMemberUsers.Length == 0 || _createdGroup == null)
+            Console.WriteLine();
+
+            if (!ValidateContextPreGroupCreation()) return;
+
+            Console.WriteLine("Start Group Creation...");
+
+            var group = GenerateGroup();
+
+            var createdGroups = GroupsService.CreateGroups(
+                                        ApiContext.CompanyGuid.Value,
+                                        new[] { group }
+                                    );
+
+            Console.WriteLine();
+
+            if (createdGroups == null || createdGroups.Length == 0)
             {
+                Console.WriteLine("Error Occurred During Creating Group.");
                 return;
             }
 
-            Console.WriteLine();
+            _createdGroup = createdGroups[0];
 
-            // Remove selected group member
-            Console.WriteLine();
-            Console.WriteLine("Start Group Member Deletion...");
-
-            foreach (var user in _groupMemberUsers)
-            {
-                Console.WriteLine();
-                Console.WriteLine($"\tRemoving user {user.EmailAddress} from group {_createdGroup.Id}.");
-                GroupMembersService.DeleteGroupMember(
-                        _createdGroup.Id,
-                        user.EmailAddress);
-            }
-
-            Console.WriteLine();
-            Console.WriteLine("Finish Group Member Deletion.");
+            Console.WriteLine($"Finished Group Creation. New Group Id: {_createdGroup.Id}");
         }
 
         private static void AddUsersToGroup()
@@ -128,32 +129,68 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine("Finish Adding Group Members.");
         }
 
-        private static void CreateGroup()
+        private static void RemoveUsersFromGroup()
         {
-            Console.WriteLine();
-
-            if (!ValidateContextPreGroupCreation()) return;
-
-            Console.WriteLine("Start Group Creation...");
-
-            var group = GenerateGroup();
-
-            var createdGroups = GroupsService.CreateGroups(
-                                        ApiContext.CompanyGuid.Value,
-                                        new[] { group }
-                                    );
-
-            Console.WriteLine();
-
-            if (createdGroups == null || createdGroups.Length == 0)
+            if (_groupMemberUsers == null || _groupMemberUsers.Length == 0 || _createdGroup == null)
             {
-                Console.WriteLine("Error Occurred During Creating Group.");
                 return;
             }
 
-            _createdGroup = createdGroups[0];
+            Console.WriteLine();
 
-            Console.WriteLine($"Finished Group Creation. New Group Id: {_createdGroup.Id}");
+            // Remove selected group member
+            Console.WriteLine();
+            Console.WriteLine("Start Group Member Deletion...");
+
+            foreach (var user in _groupMemberUsers)
+            {
+                Console.WriteLine();
+                Console.WriteLine($"\tRemoving user {user.EmailAddress} from group {_createdGroup.Id}.");
+                GroupMembersService.DeleteGroupMember(
+                        _createdGroup.Id,
+                        user.EmailAddress);
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Finish Group Member Deletion.");
+        }
+
+        private static void DeleteGroup()
+        {
+            if (_createdGroup == null)
+            {
+                return;
+            }
+
+            Console.WriteLine();
+
+            // Remove the previously created group
+            Console.WriteLine();
+            Console.WriteLine($"Delete Group With Id {_createdGroup.Id}");
+            GroupsService.DeleteGroup(_createdGroup.Id);
+        }
+
+        private static void DeleteUsers()
+        {
+            if (_createdUsers == null)
+            {
+                return;
+            }
+
+            Console.WriteLine();
+
+            // Remove created users
+            Console.WriteLine();
+            Console.WriteLine("Start Users Deletion...");
+
+            foreach (var user in _createdUsers)
+            {
+                Console.WriteLine($"\tDelete User With Email {user.EmailAddress}");
+                UsersService.DeleteUser(user.EmailAddress);
+            }
+
+            Console.WriteLine();
+            Console.WriteLine("Finished Users Deletion.");
         }
 
         private static bool ValidateContextPreGroupCreation()
@@ -177,35 +214,6 @@ namespace CSharpSampleApp.Examples
                 Owner = new User { EmailAddress = ConfigurationHelper.OwnerEmail }
             };
             return group;
-        }
-
-        private static void CreateUsers()
-        {
-            var baseEmail = GenerateRandomBaseEmail();
-
-            // Create users with email typed by user + sequence number
-            Console.WriteLine();
-            Console.WriteLine("Start Users Creation...");
-
-            var usersToAdd = GenerateUsers(baseEmail);
-
-            Console.WriteLine();
-            Console.WriteLine("Calling UsersService to add users.");
-            _createdUsers = UsersService.CreateUsers(usersToAdd.ToArray());
-
-            Console.WriteLine();
-
-            if (_createdUsers == null || _createdUsers.Length == 0)
-            {
-
-                var addedCount = _createdUsers?.Length ?? 0;
-
-                Console.WriteLine($"Error Occurred During Creating Some Of Users. Number of Created Users: {addedCount}");
-            }
-            else
-            {
-                Console.WriteLine("Finished Users Creation.");
-            }
         }
 
         private static string GenerateRandomBaseEmail()
@@ -284,7 +292,7 @@ namespace CSharpSampleApp.Examples
             {
                 if (e.Status == WebExceptionStatus.ProtocolError)
                 {
-                    var response = (HttpWebResponse) e.Response;
+                    var response = (HttpWebResponse)e.Response;
                     var permissionDenied = response.StatusCode == HttpStatusCode.Forbidden &&
                                            response.StatusDescription == "Not A Business Admin";
                     if (permissionDenied)

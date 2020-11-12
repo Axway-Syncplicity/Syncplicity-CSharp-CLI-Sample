@@ -147,6 +147,8 @@ namespace CSharpSampleApp.Util
 
         public static bool UseSecureSessionToken => Convert.ToBoolean(ConfigurationManager.AppSettings.Get("useSecureSessionToken"));
 
+        public static int NumberOfNestedFolders => Convert.ToInt32(ConfigurationManager.AppSettings.Get("numberOfNestedFolders"));
+
         /// <summary>
         /// Default group name used for creating user groups
         /// </summary>

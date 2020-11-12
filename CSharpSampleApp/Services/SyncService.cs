@@ -74,15 +74,44 @@ namespace CSharpSampleApp.Services
         }
 
         /// <summary>
-        /// Creates new folders in syncpoint.
+        /// Creates new folders in parent folder in syncpoint.
         /// </summary>
         /// <param name="syncpointId">The Id of syncpoint.</param>
         /// <param name="folderId">The Id of parent folder or Id of root folder of syncpoint.</param>
         /// <param name="folders">The created folder.</param>
         /// <returns></returns>
-        public static Folder[] CreateFolders(long syncpointId, long folderId, Folder[] folders)
+        public static Folder[] CreateFolderFolders(long syncpointId, long folderId, Folder[] folders)
         {
             return HttpPost(string.Format(FolderFoldersUrl, syncpointId, folderId), folders);
+        }
+
+        /// <summary>
+        /// Get folders in parent folder in syncpoint.
+        /// </summary>
+        /// <param name="syncpointId">The Id of syncpoint.</param>
+        /// <param name="folderId">The Id of parent folder or Id of root folder of syncpoint.</param>
+        /// <param name="folders">The created folder.</param>
+        /// <returns></returns>
+        public static Folder[] GetFolderFolders(long syncpointId, long folderId)
+        {
+            return GetFolders(syncpointId, folderId);
+        }
+
+        /// <summary>
+        /// Gets Folders array object by syncpoint Id and folder Id.
+        /// </summary>
+        /// <param name="syncpointId">The Id of syncpoint.</param>
+        /// <param name="folderId">The Id of folder.</param>
+        /// <param name="deleted">If set then return deleted files.</param>
+        /// <returns></returns>
+        public static Folder[] GetFolders(long syncpointId, long folderId, bool deleted = false)
+        {
+            var includes = "active";
+            if (deleted)
+            {
+                includes += ",deleted";
+            }
+            return HttpGet<Folder[]>(string.Format(FolderFoldersUrl, syncpointId, folderId));
         }
 
         /// <summary>
@@ -113,9 +142,9 @@ namespace CSharpSampleApp.Services
         /// <param name="syncpoint">The syncpoint object.</param>
         /// <param name="folders">The created folder.</param>
         /// <returns></returns>
-        public static Folder[] CreateFolders(SyncPoint syncpoint, Folder[] folders)
+        public static Folder[] CreateFolderFolders(SyncPoint syncpoint, Folder[] folders)
         {
-            return CreateFolders(syncpoint.Id, syncpoint.RootFolderId, folders);
+            return CreateFolderFolders(syncpoint.Id, syncpoint.RootFolderId, folders);
         }
 
         /// <summary>
@@ -124,9 +153,9 @@ namespace CSharpSampleApp.Services
         /// <param name="folder">The parent folder object.</param>
         /// <param name="folders">The created folders.</param>
         /// <returns></returns>
-        public static Folder[] CreateFolders(Folder folder, Folder[] folders)
+        public static Folder[] CreateFolderFolders(Folder folder, Folder[] folders)
         {
-            return CreateFolders(folder.SyncpointId, folder.FolderId, folders);
+            return CreateFolderFolders(folder.SyncpointId, folder.FolderId, folders);
         }
 
         /// <summary>
@@ -176,6 +205,7 @@ namespace CSharpSampleApp.Services
             return uri;
         }
 
+        
         #endregion Private Methods
 
         public static void RemoveFolder(long syncpointId, long folderId, bool removePermanently)

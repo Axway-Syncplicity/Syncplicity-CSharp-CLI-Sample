@@ -71,7 +71,7 @@ namespace CSharpSampleApp
                 Console.WriteLine();
                 Console.WriteLine("Provisioning part is completed. Press enter to continue to simple file upload example.");
                 Console.ReadLine();
-
+                
                 ContentExample.ExecuteSimple();
                 Console.WriteLine();
                 Console.WriteLine("Simple upload part is completed. Press enter to continue to chunked file upload example.");
@@ -114,7 +114,17 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteRenameFile();
                 Console.WriteLine();
-                Console.WriteLine("Rename file part is completed. Press enter to continue to content search example.");
+                Console.WriteLine("Rename file part is completed. Press enter to continue to newsfeed events example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteNewsFeedEvents();
+                Console.WriteLine();
+                Console.WriteLine("NewsFeed Events part is completed. Press enter to continue to content create nested folders example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteCreateNestedFolder();
+                Console.WriteLine();
+                Console.WriteLine("Create nested folders part is completed. Press enter to continue to content search example.");
                 Console.ReadLine();
 
                 SearchExample.Execute();
@@ -129,7 +139,7 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteFileTagging();
                 Console.WriteLine();
-                Console.WriteLine("File tagging part is completed. Press enter to continue to file tagging  on behalf of another user example.");
+                Console.WriteLine("File tagging part is completed. Press enter to continue to on behalf of another user example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteOnBehalfOf();
