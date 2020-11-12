@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Web.SessionState;
 using File = CSharpSampleApp.Entities.File;
 
 namespace CSharpSampleApp.Examples
@@ -124,6 +125,18 @@ namespace CSharpSampleApp.Examples
             CreateFolder();
             RenameFolder();
             RemoveFolderPermanently();
+        }
+
+        public static void ExecuteNewsFeedEvents()
+        {
+            // In order to generate some events
+            if (_currentFolder == null)
+            {
+                CreateSyncpoint();
+                CreateFolder();
+            }
+
+            EventsService.GetNewsFeedEventsForUser();
         }
 
         /*
@@ -261,6 +274,8 @@ namespace CSharpSampleApp.Examples
             // go beyond the user possibilities and download earlier deleted and legally held content
             Console.WriteLine("eDiscovery On-Behalf-Of User: Downloading permanently deleted content...");
             DownloadFile(localFilePath, true);
+
+            RemoveFolderPermanently();
         }
 
         #region LinksCategory
@@ -289,11 +304,13 @@ namespace CSharpSampleApp.Examples
             CreateSyncpoint();
             CreateFolder();
             UploadFile(localFilePath, UploadMode.Simple);
-            
+
             var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksData);
 
             var sharedLinks = CreateSharedLinks(linkData);
             _currentSharedLink = sharedLinks.FirstOrDefault();
+
+            RemoveFolderPermanently();
         }
 
         /// <summary>
@@ -346,6 +363,29 @@ namespace CSharpSampleApp.Examples
             LinkService.DeleteSharedLink(_currentSharedLink.Token);
             RemoveFilePermanently(localFilePath);
             RemoveFolderPermanently();
+        }
+
+        #endregion
+
+        #region FolderFolders
+        /*
+         * Content - Create Nested Folders
+         * - Creating a Syncpoint
+         * - Creating apParent folder
+         * - Creating nested folders into parent folder
+         * - Removing the folders
+        */
+        public static void ExecuteCreateNestedFolder()
+        {
+            if (!ValidateConfigurationForOrdinarySample()) return;
+
+            CreateSyncpoint();
+
+            if (!ApiContext.HasStorageEndpoint) return;
+
+            CreateFolder();
+            CreateNestedFolders();
+            RemoveFoldersPermanently();
         }
 
         #endregion
@@ -440,6 +480,39 @@ namespace CSharpSampleApp.Examples
             }
 
             Console.WriteLine("No folder to remove.");
+        }
+
+        private static void RemoveFolderPermanently(long syncpointId, long folderId)
+        {
+            if (_currentFolder != null)
+            {
+                SyncService.RemoveFolder(syncpointId, folderId, removePermanently: false);
+                SyncService.RemoveFolder(syncpointId, folderId, removePermanently: true);
+                return;
+            }
+
+            Console.WriteLine("No folder to remove.");
+        }
+
+        private static void RemoveFoldersPermanently()
+        {
+            if (_currentFolder == null)
+            {
+                Console.WriteLine("No folders to remove.");
+                return;
+            }
+
+            var folders = SyncService.GetFolderFolders(_currentFolder.SyncpointId, _currentFolder.FolderId);
+
+            foreach (var folder in folders)
+            {
+                RemoveFolderPermanently(folder.SyncpointId, folder.FolderId);
+                Console.WriteLine($"Folder with id: {folder.FolderId} and ParentFolderId: {_currentFolder.FolderId} is Reomved Permanently");
+                Console.WriteLine();
+            }
+
+            RemoveFolderPermanently(_currentFolder.SyncpointId, _currentFolder.FolderId);
+            Console.WriteLine($"Parent Folder with id: {_currentFolder.FolderId} is Reomved Permanently");
         }
 
         private static void RemoveFilePermanently(string localFilePath)
@@ -627,6 +700,59 @@ namespace CSharpSampleApp.Examples
                 $"Finished Folder Creation. Created new Folder {createdFolders[0].Name} with Id: {createdFolders[0].FolderId}");
         }
 
+        private static void CreateNestedFolders()
+        {
+            if (_currentSyncpoint == null)
+            {
+                return;
+            }
+
+            // Internal integer id of syncpoint
+            var syncpointId = _currentSyncpoint.Id;
+
+            if (_currentFolder == null)
+            {
+                return;
+            }
+
+            // Internal folder id of parentFolder
+            var parentFolderId = _currentFolder.FolderId;
+
+            // Create array of folders to be nested under the parent folder with parentFolderId
+            var nestedFolders = CreateFoldersCollection(ConfigurationHelper.NumberOfNestedFolders);
+            var createdFolderFolders = SyncService.CreateFolderFolders(syncpointId, parentFolderId, nestedFolders);
+
+            if (createdFolderFolders == null || createdFolderFolders.Length == 0)
+            {
+                Console.WriteLine("Error occurred during creating new folder. Content APIs will not be able to continue.");
+                return;
+            }
+
+            foreach (var folder in createdFolderFolders)
+            {
+                Console.WriteLine(
+               $"Finished Folder Creation. Created new Folder {folder.Name} with Id: {folder.FolderId} and parent folder id: {folder.ParentFolderId}.");
+            }
+        }
+
+        private static Folder[] CreateFoldersCollection(int numberOfNestedFolders)
+        {
+            var nestedFolders = new Folder[numberOfNestedFolders];
+
+            for (int i = 0; i < numberOfNestedFolders; i++)
+            {
+                var folder = new Folder
+                {
+                    Name = $@"{ConfigurationHelper.FolderName}{_random.Next()}",
+                    Status = FolderStatus.Added
+                };
+
+                nestedFolders[i] = folder;
+            }
+
+            return nestedFolders;
+        }
+
         private static void RenameFolder()
         {
             try
@@ -706,10 +832,7 @@ namespace CSharpSampleApp.Examples
 
         private static void UploadFile(string localFilePath, UploadMode mode)
         {
-            if (_currentFolder == null)
-            {
-                return;
-            }
+            if (_currentFolder == null) return;
 
             Console.WriteLine();
 
@@ -808,10 +931,7 @@ namespace CSharpSampleApp.Examples
 
         private static void PostTagsForFolder()
         {
-            if (_currentFolder == null)
-            {
-                return;
-            }
+            if (_currentFolder == null) return;
 
             try
             {
@@ -833,10 +953,7 @@ namespace CSharpSampleApp.Examples
 
         private static void GetTagsForFolder()
         {
-            if (_currentFolder == null)
-            {
-                return;
-            }
+            if (_currentFolder == null) return;
 
             try
             {
@@ -857,10 +974,7 @@ namespace CSharpSampleApp.Examples
 
         private static void DeleteTagsForFolder()
         {
-            if (_currentFolder == null)
-            {
-                return;
-            }
+            if (_currentFolder == null) return;
 
             try
             {

@@ -72,6 +72,15 @@
     <Compile Include="Entities\Billing\SubscriptionType.cs" />
     <Compile Include="Entities\Company\Company.cs" />
     <Compile Include="Entities\Company\CompanyAccountType.cs" />
+    <Compile Include="Entities\Events\NewsFeedEvent.cs" />
+    <Compile Include="Entities\Events\NewsFeedEventCompany.cs" />
+    <Compile Include="Entities\Events\NewsFeedEventData.cs" />
+    <Compile Include="Entities\Events\NewsFeedEventFile.cs" />
+    <Compile Include="Entities\Events\NewsFeedEventFolder.cs" />
+    <Compile Include="Entities\Events\NewsFeedEventMachine.cs" />
+    <Compile Include="Entities\Events\NewsFeedEventSource.cs" />
+    <Compile Include="Entities\Events\NewsFeedEventSyncpoint.cs" />
+    <Compile Include="Entities\Events\NewsFeedEventUser.cs" />
     <Compile Include="Entities\File\File.cs" />
     <Compile Include="Entities\File\FileStatus.cs" />
     <Compile Include="Entities\File\FileVersion.cs" />
@@ -166,6 +175,8 @@
     <Compile Include="Examples\SearchExample.cs" />
     <Compile Include="Examples\Search\PagedSearchResultEnumerable.cs" />
     <Compile Include="Examples\Search\SearchResultsMergingEnumerable.cs" />
+    <Compile Include="Services\EventsService.cs" />
+    <Compile Include="Services\CompanyService.cs" />
     <Compile Include="Services\LinkService.cs" />
     <Compile Include="Services\LinksService.cs" />
     <Compile Include="Services\TokenResponse.cs" />
