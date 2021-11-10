@@ -1,11 +1,10 @@
-﻿using System;
-using System.Configuration;
+﻿using CSharpSampleApp.Util;
+using JsonPrettyPrinterPlus;
+using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
-using CSharpSampleApp.Util;
-using Newtonsoft.Json;
-using JsonPrettyPrinterPlus;
 
 namespace CSharpSampleApp.Services
 {
@@ -506,6 +505,12 @@ namespace CSharpSampleApp.Services
             }
         }
 
+        /// <summary>
+        /// Secured Session Token (SST) is a special authorization token issued by Syncplicity API to a specific Storage Vault
+        /// that is required to prevent potential misuse of 'general purpose' access tokens by a faulty/rogue storage vault.
+        /// </summary>
+        /// <param name="storageEndpointId">GUID ID associated with the StorageVault endpoint</param>
+        /// <returns>The access token</returns>
         public static string CreateSst(Guid storageEndpointId)
         {
             var authRequestBody = string.Format("grant_type={0}&token={1}&resource={2}",
@@ -514,6 +519,26 @@ namespace CSharpSampleApp.Services
                         ? ApiContext.MachineToken
                         : ApiContext.AccessToken),
                     Uri.EscapeDataString($"urn:syncplicity:resources:storage:{storageEndpointId}"));
+
+            var tokenResponse = CreateToken(authRequestBody, request => { });
+
+            return tokenResponse.AccessToken;
+        }
+
+        /// <summary>
+        /// A Secure Session Link token (SSLT) is specifically used to perform file upload and download operations using shared links, 
+        /// instead of the SST used for standard upload/download using the API.
+        /// </summary>
+        /// <param name="accessToken">Value of the access token</param>
+        /// <param name="linkToken">Link token of the shared link</param>
+        /// <param name="linkPassword">Link password of the shared link</param>
+        /// <returns>The access token</returns>
+        public static string CreateSslt(string accessToken, string linkToken, string linkPassword = null)
+        {
+            var authRequestBody =
+                $"grant_type={Uri.EscapeDataString("urn:syncplicity:oauth:grant-type:access-token")}&" +
+                $"resources={Uri.EscapeDataString($"urn:syncplicity:resources:link:{linkToken}:{linkPassword ?? string.Empty}")}&" +
+                $"token={accessToken}";
 
             var tokenResponse = CreateToken(authRequestBody, request => { });
 
