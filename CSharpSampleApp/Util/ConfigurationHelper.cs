@@ -116,7 +116,7 @@ namespace CSharpSampleApp.Util
         /// C:\\Temp\foo.txt
         /// </example>
         public static string UploadFileLarge => ConfigurationManager.AppSettings.Get("uploadFileLarge");
-        
+
         /// <summary>
         /// Enter the local path to a small/large file that is readable and able to be uploaded.
         /// </summary>
@@ -144,6 +144,7 @@ namespace CSharpSampleApp.Util
         /// Sample links data collection. Could be replaced by custom LinkData entitiy using ~\Entities\Link\LinkData.cs
         /// </summary>
         public static string LinksData => ConfigurationManager.AppSettings.Get("linksData");
+        public static string LinksContributeToFolderData => ConfigurationManager.AppSettings.Get("linksContributeToFolderData");
 
         public static bool UseSecureSessionToken => Convert.ToBoolean(ConfigurationManager.AppSettings.Get("useSecureSessionToken"));
 

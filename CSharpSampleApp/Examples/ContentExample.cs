@@ -304,7 +304,7 @@ namespace CSharpSampleApp.Examples
             CreateFolder();
             UploadFile(localFilePath, UploadMode.Simple);
 
-            var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksContributeToFolderData);
+            var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksData);
 
             var sharedLinks = CreateSharedLinks(linkData);
             _currentSharedLink = sharedLinks.FirstOrDefault();
