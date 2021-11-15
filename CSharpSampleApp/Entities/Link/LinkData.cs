@@ -16,5 +16,17 @@ namespace CSharpSampleApp.Entities
 
         [DataMember(EmitDefaultValue = false, Name = "fileName", Order = 3)]
         public string FileName { get; set; }
+
+        [DataMember(EmitDefaultValue = false, Name = "shareLinkPolicy", Order = 4)]
+        public ShareLinkPolicy SharedLinkPolicy { get; set; }
+
+        [DataMember(EmitDefaultValue = false, Name = "passwordProtectedPolicy", Order = 5)]
+        public ShareLinkPasswordProtectedPolicy PasswordProtectPolicy { get; set; }
+
+        [DataMember(EmitDefaultValue = false, Name = "shareType", Order = 6)]
+        public ShareType ShareType { get; set; }
+
+        [DataMember(EmitDefaultValue = false, Name = "linkPermissionType", Order = 7)]
+        public LinkPermissionType LinkPermissionType { get; set; }
     }
 }
