@@ -551,8 +551,6 @@ namespace CSharpSampleApp.Services
         /// </summary>
         public static void RevokeToken()
         {
-
-
             var response = HttpGet<TokenResponse>(GolGateway.OAuthRevokeTokenUrl);
 
             // Response will/should be null for revoke
@@ -561,7 +559,6 @@ namespace CSharpSampleApp.Services
 
         public static void RefreshToken()
         {
-
             // Note: technically refreshToken() which uses grant_type=client_credentials
             // is the same behavior as just authenticating authenticate() for the first time.
             // The name is just to be explicit in the use-case
