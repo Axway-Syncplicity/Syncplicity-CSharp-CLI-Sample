@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Web.SessionState;
 using File = CSharpSampleApp.Entities.File;
 
 namespace CSharpSampleApp.Examples
@@ -305,12 +304,36 @@ namespace CSharpSampleApp.Examples
             CreateFolder();
             UploadFile(localFilePath, UploadMode.Simple);
 
-            var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksData);
+            var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksContributeToFolderData);
 
             var sharedLinks = CreateSharedLinks(linkData);
             _currentSharedLink = sharedLinks.FirstOrDefault();
 
             RemoveFolderPermanently();
+        }
+
+        /// <summary>
+        /// POST /syncpoint/links.svc/ with contribute permission to folder
+        /// receives collection of Links to create
+        /// returns collection of created Links
+        /// </summary>
+        public static void ExecuteLinksWithContributePermissionsToFolderPost()
+        {
+            // Prepare syncpoint, folder
+            var localFilePath = ConfigurationHelper.UploadFileExcel;
+            if (!ValidateConfigurationForSharedLinkSample(localFilePath))
+            {
+                return;
+            }
+            CreateSyncpoint();
+            CreateFolder();
+
+            var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksContributeToFolderData);
+
+            var sharedLinks = CreateSharedLinksWithContributePermissionsToFolder(linkData);
+            _currentSharedLink = sharedLinks.FirstOrDefault();
+
+            //RemoveFolderPermanently();
         }
 
         /// <summary>
@@ -817,7 +840,7 @@ namespace CSharpSampleApp.Examples
                     LinkExpirationPolicy = ShareLinkExpirationPolicy.Enabled,
                     PasswordProtectPolicy = ShareLinkPasswordProtectedPolicy.Disabled,
                     RolId = 1,
-                    SharedLinkPolicy = ShareLinkPolicy.IntendedOnly,
+                    ShareLinkPolicy = ShareLinkPolicy.IntendedOnly,
                     IrmRoleType = IrmRoleType.Reader,
                     IsIrmProtected = true,
                     Users = new User []
@@ -825,6 +848,33 @@ namespace CSharpSampleApp.Examples
                         new User {EmailAddress = linkData.Email }
                     },
                     Message = linkData.OldMessage
+                }
+            };
+            return LinksService.CreateSharedLinks(links);
+        }
+
+        private static IEnumerable<Link> CreateSharedLinksWithContributePermissionsToFolder(LinkData linkData)
+        {
+            Console.WriteLine("Creating Shared Links ...");
+            var links = new Link[]
+            {
+                new Link
+                {
+                    RolId = 1,
+                    Users = new User []
+                    {
+                        new User {EmailAddress = linkData.Email } // Recipient
+                    },
+                    ShareLinkPolicy = ShareLinkPolicy.IntendedOnly,
+                    PasswordProtectPolicy = ShareLinkPasswordProtectedPolicy.Disabled,
+                    Folder = new Folder
+                    {
+                        FolderId = _currentFolder.FolderId
+                    },
+                    SyncPointId = _currentFolder.SyncpointId,
+                    ShareResourceType = ShareResourceType.Folder,
+                    ShareType = ShareType.ShareLink,
+                    LinkPermissionType = LinkPermissionType.Contribute
                 }
             };
             return LinksService.CreateSharedLinks(links);
