@@ -332,8 +332,12 @@ namespace CSharpSampleApp.Examples
 
             var sharedLinks = CreateSharedLinksWithContributePermissionsToFolder(linkData);
             _currentSharedLink = sharedLinks.FirstOrDefault();
+        }
 
-            //RemoveFolderPermanently();
+        public static void ExecuteUploadFileToSharedLinkWithSslt()
+        {
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+            UploadFile(localFilePath, UploadMode.Simple, _currentSharedLink);
         }
 
         /// <summary>
@@ -855,7 +859,7 @@ namespace CSharpSampleApp.Examples
 
         private static IEnumerable<Link> CreateSharedLinksWithContributePermissionsToFolder(LinkData linkData)
         {
-            Console.WriteLine("Creating Shared Links ...");
+            Console.WriteLine("Creating Shared Links With Contribute Permissions To Folder...");
             var links = new Link[]
             {
                 new Link
@@ -880,7 +884,7 @@ namespace CSharpSampleApp.Examples
             return LinksService.CreateSharedLinks(links);
         }
 
-        private static void UploadFile(string localFilePath, UploadMode mode)
+        private static void UploadFile(string localFilePath, UploadMode mode, Link link = null)
         {
             if (_currentFolder == null) return;
 
@@ -904,7 +908,7 @@ namespace CSharpSampleApp.Examples
                         break;
                     case UploadMode.Simple:
                     default:
-                        uploadClient.UploadFileWithoutChunking();
+                        uploadClient.UploadFileWithoutChunking(link);
                         break;
                 }
 

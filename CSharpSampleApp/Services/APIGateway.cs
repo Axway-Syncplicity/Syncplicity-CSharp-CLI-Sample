@@ -102,6 +102,25 @@ namespace CSharpSampleApp.Services
             return response;
         }
 
+        private static TokenResponse CreateSsltToken(string body, Action<HttpWebRequest> prepareRequest = null)
+        {
+            const string contentType = "application/x-www-form-urlencoded";
+
+            var request = CreateRequest("POST", GolGateway.OAuthTokenUrl);
+            var basicAuthRawToken = $"{ConfigurationHelper.ApplicationKey}:{ConfigurationHelper.ApplicationSecret}";
+            var basicAuthToken = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(basicAuthRawToken));
+            Console.WriteLine($"[Header] Authorization: Basic {basicAuthToken} (Base64 encoded combination of App key and App secret)");
+            request.Headers.Add("Authorization", $"Basic {basicAuthToken}");
+
+            prepareRequest?.Invoke(request);
+
+            request.ContentType = contentType;
+            WriteBody(request, body);
+
+            var response = ReadFirstAttemptResponse<TokenResponse>(request, out var isNeededReAuth);
+            return response;
+        }
+
         /// <summary>
         /// Reads the response from the request and returns the received object.
         /// </summary>
@@ -529,18 +548,17 @@ namespace CSharpSampleApp.Services
         /// A Secure Session Link token (SSLT) is specifically used to perform file upload and download operations using shared links, 
         /// instead of the SST used for standard upload/download using the API.
         /// </summary>
-        /// <param name="accessToken">Value of the access token</param>
         /// <param name="linkToken">Link token of the shared link</param>
         /// <param name="linkPassword">Link password of the shared link</param>
         /// <returns>The access token</returns>
-        public static string CreateSslt(string accessToken, string linkToken, string linkPassword = null)
+        public static string CreateSslt(string linkToken, string linkPassword = null)
         {
             var authRequestBody =
                 $"grant_type={Uri.EscapeDataString("urn:syncplicity:oauth:grant-type:access-token")}&" +
-                $"resources={Uri.EscapeDataString($"urn:syncplicity:resources:link:{linkToken}:{linkPassword ?? string.Empty}")}&" +
-                $"token={accessToken}";
+                $"resource={Uri.EscapeDataString($"urn:syncplicity:resources:link:{linkToken}:{linkPassword ?? string.Empty}")}&" +
+                $"token={ApiContext.AccessToken}";
 
-            var tokenResponse = CreateToken(authRequestBody, request => { });
+            var tokenResponse = CreateSsltToken(authRequestBody, request => { });
 
             return tokenResponse.AccessToken;
         }

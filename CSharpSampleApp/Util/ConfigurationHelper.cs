@@ -145,9 +145,8 @@ namespace CSharpSampleApp.Util
         /// </summary>
         public static string LinksData => ConfigurationManager.AppSettings.Get("linksData");
         public static string LinksContributeToFolderData => ConfigurationManager.AppSettings.Get("linksContributeToFolderData");
-
         public static bool UseSecureSessionToken => Convert.ToBoolean(ConfigurationManager.AppSettings.Get("useSecureSessionToken"));
-
+        public static bool UseSecureSessionLinkToken => Convert.ToBoolean(ConfigurationManager.AppSettings.Get("useSecureSessionLinkToken"));
         public static int NumberOfNestedFolders => Convert.ToInt32(ConfigurationManager.AppSettings.Get("numberOfNestedFolders"));
 
         /// <summary>
