@@ -308,8 +308,6 @@ namespace CSharpSampleApp.Examples
 
             var sharedLinks = CreateSharedLinks(linkData);
             _currentSharedLink = sharedLinks.FirstOrDefault();
-
-            RemoveFolderPermanently();
         }
 
         /// <summary>
@@ -338,6 +336,7 @@ namespace CSharpSampleApp.Examples
         {
             var localFilePath = ConfigurationHelper.UploadFileSmall;
             UploadFile(localFilePath, UploadMode.Simple, _currentSharedLink);
+            RemoveFolderPermanently(); //Moved folder deletion as we want to delete folder of the shared link after all link operations.
         }
 
         /// <summary>

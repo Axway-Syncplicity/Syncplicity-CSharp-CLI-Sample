@@ -117,7 +117,6 @@ namespace CSharpSampleApp
                 Console.WriteLine("Upload file to a folder for the above link with contribute permissions to folder. Press enter to continue to Get shared file links example.");
                 Console.ReadLine();
 
-
                 ContentExample.ExecuteRenameFolder();
                 Console.WriteLine();
                 Console.WriteLine("Rename folder part is completed. Press enter to continue to content rename file example.");
