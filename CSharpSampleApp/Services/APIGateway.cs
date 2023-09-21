@@ -104,21 +104,7 @@ namespace CSharpSampleApp.Services
 
         private static TokenResponse CreateSsltToken(string body, Action<HttpWebRequest> prepareRequest = null)
         {
-            const string contentType = "application/x-www-form-urlencoded";
-
-            var request = CreateRequest("POST", GolGateway.OAuthTokenUrl);
-            var basicAuthRawToken = $"{ConfigurationHelper.ApplicationKey}:{ConfigurationHelper.ApplicationSecret}";
-            var basicAuthToken = Convert.ToBase64String(Encoding.GetEncoding("ISO-8859-1").GetBytes(basicAuthRawToken));
-            Console.WriteLine($"[Header] Authorization: Basic {basicAuthToken} (Base64 encoded combination of App key and App secret)");
-            request.Headers.Add("Authorization", $"Basic {basicAuthToken}");
-
-            prepareRequest?.Invoke(request);
-
-            request.ContentType = contentType;
-            WriteBody(request, body);
-
-            var response = ReadFirstAttemptResponse<TokenResponse>(request, out var isNeededReAuth);
-            return response;
+            return CreateToken(body, prepareRequest);
         }
 
         /// <summary>
