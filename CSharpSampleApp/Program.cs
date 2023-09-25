@@ -104,17 +104,17 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteLinkTokenDelete();
                 Console.WriteLine();
-                Console.WriteLine("Delete a shared file link part is completed. Press enter to continue to rename folder example.");
+                Console.WriteLine("Delete a shared file link part is completed. Press enter to continue to create link with contribute permission to folder example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteLinksWithContributePermissionsToFolderPost();
                 Console.WriteLine();
-                Console.WriteLine("Create a shared link with contribute permission to folder part is completed. Press enter to continue to Get shared file links example.");
+                Console.WriteLine("Create a shared link with contribute permission to folder part is completed. Press enter to continue to upload file to a shared link with sslt example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteUploadFileToSharedLinkWithSslt();
                 Console.WriteLine();
-                Console.WriteLine("Upload file to a folder for the above link with contribute permissions to folder. Press enter to continue to Get shared file links example.");
+                Console.WriteLine("Upload file to a folder for the above link with contribute permissions to folder. Press enter to continue to rename folder example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteRenameFolder();
