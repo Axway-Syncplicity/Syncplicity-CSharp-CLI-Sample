@@ -114,7 +114,7 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteUploadFileToSharedLinkWithSslt();
                 Console.WriteLine();
-                Console.WriteLine("Upload file to a folder for the above link with contribute permissions to folder. Press enter to continue to rename folder example.");
+                Console.WriteLine("Upload file to a folder for the above link with contribute permissions to folder is completed. Press enter to continue to rename folder example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteRenameFolder();
