@@ -1,11 +1,10 @@
-﻿using System;
-using System.Configuration;
+﻿using CSharpSampleApp.Util;
+using JsonPrettyPrinterPlus;
+using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Net;
 using System.Text;
-using CSharpSampleApp.Util;
-using Newtonsoft.Json;
-using JsonPrettyPrinterPlus;
 
 namespace CSharpSampleApp.Services
 {
@@ -101,6 +100,11 @@ namespace CSharpSampleApp.Services
 
             var response = ReadFirstAttemptResponse<TokenResponse>(request, out var isNeededReAuth);
             return response;
+        }
+
+        private static TokenResponse CreateSsltToken(string body, Action<HttpWebRequest> prepareRequest = null)
+        {
+            return CreateToken(body, prepareRequest);
         }
 
         /// <summary>
@@ -506,6 +510,12 @@ namespace CSharpSampleApp.Services
             }
         }
 
+        /// <summary>
+        /// Secured Session Token (SST) is a special authorization token issued by Syncplicity API to a specific Storage Vault
+        /// that is required to prevent potential misuse of 'general purpose' access tokens by a faulty/rogue storage vault.
+        /// </summary>
+        /// <param name="storageEndpointId">GUID ID associated with the StorageVault endpoint</param>
+        /// <returns>The access token</returns>
         public static string CreateSst(Guid storageEndpointId)
         {
             var authRequestBody = string.Format("grant_type={0}&token={1}&resource={2}",
@@ -521,13 +531,30 @@ namespace CSharpSampleApp.Services
         }
 
         /// <summary>
+        /// A Secure Session Link token (SSLT) is specifically used to perform file upload and download operations using shared links, 
+        /// instead of the SST used for standard upload/download using the API.
+        /// </summary>
+        /// <param name="linkToken">Link token of the shared link</param>
+        /// <param name="linkPassword">Link password of the shared link</param>
+        /// <returns>The access token</returns>
+        public static string CreateSslt(string linkToken, string linkPassword = null)
+        {
+            var authRequestBody =
+                $"grant_type={Uri.EscapeDataString("urn:syncplicity:oauth:grant-type:access-token")}&" +
+                $"resource={Uri.EscapeDataString($"urn:syncplicity:resources:link:{linkToken}:{linkPassword ?? string.Empty}")}&" +
+                $"token={ApiContext.AccessToken}";
+
+            var tokenResponse = CreateSsltToken(authRequestBody, request => { });
+
+            return tokenResponse.AccessToken;
+        }
+
+        /// <summary>
         /// This call will invalidate the current oauth and any refresh-tokens
         /// along with removing the grant of access to the application to the given user account.   
         /// </summary>
         public static void RevokeToken()
         {
-
-
             var response = HttpGet<TokenResponse>(GolGateway.OAuthRevokeTokenUrl);
 
             // Response will/should be null for revoke
@@ -536,7 +563,6 @@ namespace CSharpSampleApp.Services
 
         public static void RefreshToken()
         {
-
             // Note: technically refreshToken() which uses grant_type=client_credentials
             // is the same behavior as just authenticating authenticate() for the first time.
             // The name is just to be explicit in the use-case

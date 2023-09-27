@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CSharpSampleApp</RootNamespace>
     <AssemblyName>CSharpSample App</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
@@ -28,6 +28,7 @@
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -113,6 +114,7 @@
     <Compile Include="Entities\Policy\HomeDirectoryPolicy.cs" />
     <Compile Include="Entities\Policy\IncludeOwnerInFolderNamePolicy.cs" />
     <Compile Include="Entities\Policy\IrmRoleType.cs" />
+    <Compile Include="Entities\Policy\LinkPermissionType.cs" />
     <Compile Include="Entities\Policy\MobileDataSyncLimit.cs" />
     <Compile Include="Entities\Policy\MobileSyncLimitsPolicy.cs" />
     <Compile Include="Entities\Policy\MobileSyncPolicy.cs" />
@@ -139,6 +141,8 @@
     <Compile Include="Entities\Policy\ShareLinkPasswordComplexity.cs" />
     <Compile Include="Entities\Policy\ShareLinkPasswordProtectedPolicy.cs" />
     <Compile Include="Entities\Policy\ShareLinkPolicy.cs" />
+    <Compile Include="Entities\Policy\ShareResourceType.cs" />
+    <Compile Include="Entities\Policy\ShareType.cs" />
     <Compile Include="Entities\Policy\StorageCookiePersistancePolicy.cs" />
     <Compile Include="Entities\Policy\StoragePasswordComplexity.cs" />
     <Compile Include="Entities\Policy\StoragePasswordComplexityPolicy.cs" />

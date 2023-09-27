@@ -64,12 +64,24 @@ namespace CSharpSampleApp.Entities
         public int RolId;
 
         [DataMember(EmitDefaultValue = false, Order = 25)]
-        public ShareLinkPolicy SharedLinkPolicy;
+        public ShareLinkPolicy ShareLinkPolicy;
 
         [DataMember(EmitDefaultValue = false, Order = 26)]
         public bool IsIrmProtected;
 
         [DataMember(EmitDefaultValue = false, Order = 27)]
         public IrmRoleType IrmRoleType;
+
+        [DataMember(EmitDefaultValue = false, Order = 28)]
+        public ShareResourceType ShareResourceType;
+
+        [DataMember(EmitDefaultValue = false, Order = 29)]
+        public ShareType ShareType;
+
+        [DataMember(EmitDefaultValue = false, Order = 30)]
+        public LinkPermissionType LinkPermissionType;
+
+        [DataMember(EmitDefaultValue = false, Order = 31)]
+        public Folder Folder;
     }
 }

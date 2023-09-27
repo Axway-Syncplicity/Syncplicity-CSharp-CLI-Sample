@@ -1,4 +1,6 @@
-﻿using System;
+﻿using CSharpSampleApp.Entities;
+using CSharpSampleApp.Util;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -7,8 +9,6 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
-using CSharpSampleApp.Entities;
-using CSharpSampleApp.Util;
 
 namespace CSharpSampleApp.Services.Upload
 {
@@ -29,6 +29,7 @@ namespace CSharpSampleApp.Services.Upload
         private readonly AsyncCallback _callback;
 
         private string _sessionKey;
+        private string _ssltToken;
         private string _uploadUrl;
         private long _chunkSize;
         private string _eTag;
@@ -63,14 +64,14 @@ namespace CSharpSampleApp.Services.Upload
             GetResponseAndUpdateChunkUploadStateFields(queryRequest);
         }
 
-        public void UploadFileWithoutChunking()
+        public void UploadFileWithoutChunking(Link link = null)
         {
             if (!_fileInfo.Exists)
             {
                 throw new ApplicationException("File doesn't exist.");
             }
 
-            Initialize();
+            Initialize(link);
 
             ShouldChunk = false;
 
@@ -88,7 +89,7 @@ namespace CSharpSampleApp.Services.Upload
                     // For sequential chunk uploading this will be a no-op.
                     fileStream.Position = Math.Min(fileStream.Length, _startByte);
 
-                    shouldContinue = UploadChunk(fileStream);
+                    shouldContinue = UploadChunk(fileStream, link);
                 } while (shouldContinue);
             }
         }
@@ -155,12 +156,12 @@ namespace CSharpSampleApp.Services.Upload
         /// <summary>
         /// Returns true if there are more chunks remaining, false if we've reached the end of the file
         /// </summary>
-        private bool UploadChunk(Stream fileStream)
+        private bool UploadChunk(Stream fileStream, Link link = null)
         {
             string sha256;
             bool finalChunk;
             long bytesReadTotal = 0;
-            var chunkRequest = CreateChunkUploadRequest();
+            var chunkRequest = CreateChunkUploadRequest(link);
 
             using (var chunkRequestStream = CreateRequestStream(chunkRequest))
             {
@@ -258,7 +259,7 @@ namespace CSharpSampleApp.Services.Upload
             return startByte;
         }
 
-        private string CreatePostDataString(string partBoundaryLine)
+        private string CreatePostDataString(string partBoundaryLine, Link link = null)
         {
             var sb = new StringBuilder();
 
@@ -267,11 +268,36 @@ namespace CSharpSampleApp.Services.Upload
             sb.Append($"Content-Disposition: form-data; name=\"fileData\"; filename=\"{Path.GetFileName(_localFilePath)}\"\r\n");
             sb.Append("Content-Transfer-Encoding: binary\r\n");
             sb.Append("Content-Type: application/octet-stream\r\n\r\n");
+            if (link != null) //Upload will be performed on shared link
+            {
+                sb.Append("api test\r\n");
+                sb.Append($"{partBoundaryLine}");
+                sb.Append("Content-Disposition: form-data; name=\"sha256\"\r\n");
+                sb.AppendLine();
+                sb.Append("e498668995cd5cff2660d797130f8b8bb2252a44d8f88c9cb4f9daf761538072\r\n");
+                sb.Append($"{ partBoundaryLine}");
+                sb.Append("Content-Disposition: form-data; name=\"Filename\"\r\n");
+                sb.AppendLine();
+                sb.Append($"{Path.GetFileName(_localFilePath)}\"\r\n");
+                sb.Append($"{ partBoundaryLine}");
+                sb.Append("Content-Disposition: form-data; name=\"sessionKey\"\r\n");
+                sb.AppendLine();
+                sb.Append($"{_ssltToken}\r\n");
+                sb.Append($"{partBoundaryLine}");
+                sb.Append("Content-Disposition: form-data; name=\"dirId\"\r\n");
+                sb.AppendLine();
+                sb.Append($"{link.SyncPointId}-{link.Folder.FolderId}\r\n");
+                sb.Append($"{partBoundaryLine}");
+                sb.Append("Content-Disposition: form-data; name=\"fileDone\"\r\n");
+                sb.AppendLine();
+                sb.AppendLine();
+                sb.Append($"{partBoundaryLine}\r\n");
+            }
 
             return sb.ToString();
         }
 
-        private HttpWebRequest CreateRequest()
+        private HttpWebRequest CreateRequest(Link link = null)
         {
             var fullUploadUrl = $"{_uploadUrl}?filepath={HttpUtility.UrlEncode(_virtualPath)}";
 
@@ -290,7 +316,7 @@ namespace CSharpSampleApp.Services.Upload
                 request.Headers.Add(HttpRequestHeader.IfMatch, _eTag);
             }
 
-            request.Headers.Add(HttpRequestHeader.Authorization, _sessionKey);
+            request.Headers.Add(HttpRequestHeader.Authorization, link != null ? _ssltToken : _sessionKey);
             if (ConfigurationHelper.SyncplicityMachineTokenAuthenticationEnabled)
             {
                 request.Headers.Add("Syncplicity-Storage-Authorization", ConfigurationHelper.StorageToken);
@@ -308,7 +334,7 @@ namespace CSharpSampleApp.Services.Upload
             var partBoundaryLine = "--" + _multipartBoundaryParameter + "\r\n";
 
             // Encode header
-            var postHeader = CreatePostDataString(partBoundaryLine);
+            var postHeader = CreatePostDataString(partBoundaryLine, link);
             _headerData = Encoding.ASCII.GetBytes(postHeader);
             _boundaryData = Encoding.ASCII.GetBytes("\r\n" + partBoundaryLine);
 
@@ -322,9 +348,9 @@ namespace CSharpSampleApp.Services.Upload
             return request;
         }
 
-        private HttpWebRequest CreateChunkUploadRequest()
+        private HttpWebRequest CreateChunkUploadRequest(Link link = null)
         {
-            var request = CreateRequest();
+            var request = CreateRequest(link);
             request.Headers.Add(HttpRequestHeader.ContentRange, $"{_startByte}-*/*");
 
             return request;
@@ -391,7 +417,7 @@ namespace CSharpSampleApp.Services.Upload
             WriteFormValuePair(requestStream, "lastWriteTimeUtc", _fileInfo.LastWriteTimeUtc.ToString("o"));
         }
 
-        private void Initialize()
+        private void Initialize(Link link = null)
         {
             var syncpoint = SyncPointsService.GetSyncpoint(_syncpointId);
             if (syncpoint == null)
@@ -408,6 +434,10 @@ namespace CSharpSampleApp.Services.Upload
             if (ConfigurationHelper.UseSecureSessionToken)
             {
                 _sessionKey = string.Format(SessionKeyFormat, ApiGateway.CreateSst(storageEndpoint.Id));
+            }
+            if (link != null && ConfigurationHelper.UseSecureSessionLinkToken)
+            {
+                _ssltToken = string.Format(SessionKeyFormat, ApiGateway.CreateSslt(link.Token));
             }
             else
             {

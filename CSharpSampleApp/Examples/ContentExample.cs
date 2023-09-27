@@ -12,7 +12,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
-using System.Web.SessionState;
 using File = CSharpSampleApp.Entities.File;
 
 namespace CSharpSampleApp.Examples
@@ -309,8 +308,35 @@ namespace CSharpSampleApp.Examples
 
             var sharedLinks = CreateSharedLinks(linkData);
             _currentSharedLink = sharedLinks.FirstOrDefault();
+        }
 
-            RemoveFolderPermanently();
+        /// <summary>
+        /// POST /syncpoint/links.svc/ with contribute permission to folder
+        /// receives collection of Links to create
+        /// returns collection of created Links
+        /// </summary>
+        public static void ExecuteLinksWithContributePermissionsToFolderPost()
+        {
+            // Prepare syncpoint, folder
+            var localFilePath = ConfigurationHelper.UploadFileExcel;
+            if (!ValidateConfigurationForSharedLinkSample(localFilePath))
+            {
+                return;
+            }
+            CreateSyncpoint();
+            CreateFolder();
+
+            var linkData = JsonConvert.DeserializeObject<LinkData>(ConfigurationHelper.LinksContributeToFolderData);
+
+            var sharedLinks = CreateSharedLinksWithContributePermissionsToFolder(linkData);
+            _currentSharedLink = sharedLinks.FirstOrDefault();
+        }
+
+        public static void ExecuteUploadFileToSharedLinkWithSslt()
+        {
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+            UploadFile(localFilePath, UploadMode.Simple, _currentSharedLink);
+            RemoveFolderPermanently(); //Moved folder deletion as we want to delete folder of the shared link after all link operations.
         }
 
         /// <summary>
@@ -817,7 +843,7 @@ namespace CSharpSampleApp.Examples
                     LinkExpirationPolicy = ShareLinkExpirationPolicy.Enabled,
                     PasswordProtectPolicy = ShareLinkPasswordProtectedPolicy.Disabled,
                     RolId = 1,
-                    SharedLinkPolicy = ShareLinkPolicy.IntendedOnly,
+                    ShareLinkPolicy = ShareLinkPolicy.IntendedOnly,
                     IrmRoleType = IrmRoleType.Reader,
                     IsIrmProtected = true,
                     Users = new User []
@@ -830,7 +856,34 @@ namespace CSharpSampleApp.Examples
             return LinksService.CreateSharedLinks(links);
         }
 
-        private static void UploadFile(string localFilePath, UploadMode mode)
+        private static IEnumerable<Link> CreateSharedLinksWithContributePermissionsToFolder(LinkData linkData)
+        {
+            Console.WriteLine("Creating Shared Links With Contribute Permissions To Folder...");
+            var links = new Link[]
+            {
+                new Link
+                {
+                    RolId = 1,
+                    Users = new User []
+                    {
+                        new User {EmailAddress = linkData.Email } // Recipient
+                    },
+                    ShareLinkPolicy = ShareLinkPolicy.IntendedOnly,
+                    PasswordProtectPolicy = ShareLinkPasswordProtectedPolicy.Disabled,
+                    Folder = new Folder
+                    {
+                        FolderId = _currentFolder.FolderId
+                    },
+                    SyncPointId = _currentFolder.SyncpointId,
+                    ShareResourceType = ShareResourceType.Folder,
+                    ShareType = ShareType.ShareLink,
+                    LinkPermissionType = LinkPermissionType.Contribute
+                }
+            };
+            return LinksService.CreateSharedLinks(links);
+        }
+
+        private static void UploadFile(string localFilePath, UploadMode mode, Link link = null)
         {
             if (_currentFolder == null) return;
 
@@ -854,7 +907,7 @@ namespace CSharpSampleApp.Examples
                         break;
                     case UploadMode.Simple:
                     default:
-                        uploadClient.UploadFileWithoutChunking();
+                        uploadClient.UploadFileWithoutChunking(link);
                         break;
                 }
 

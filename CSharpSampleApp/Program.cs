@@ -1,10 +1,10 @@
-﻿using System;
+﻿using CSharpSampleApp.Examples;
+using CSharpSampleApp.Services;
+using CSharpSampleApp.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using CSharpSampleApp.Examples;
-using CSharpSampleApp.Services;
 using System.Net;
-using CSharpSampleApp.Util;
 
 namespace CSharpSampleApp
 {
@@ -71,7 +71,7 @@ namespace CSharpSampleApp
                 Console.WriteLine();
                 Console.WriteLine("Provisioning part is completed. Press enter to continue to simple file upload example.");
                 Console.ReadLine();
-                
+
                 ContentExample.ExecuteSimple();
                 Console.WriteLine();
                 Console.WriteLine("Simple upload part is completed. Press enter to continue to chunked file upload example.");
@@ -104,7 +104,17 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteLinkTokenDelete();
                 Console.WriteLine();
-                Console.WriteLine("Delete a shared file link part is completed. Press enter to continue to rename folder example.");
+                Console.WriteLine("Delete a shared file link part is completed. Press enter to continue to create link with contribute permission to folder example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteLinksWithContributePermissionsToFolderPost();
+                Console.WriteLine();
+                Console.WriteLine("Create a shared link with contribute permission to folder part is completed. Press enter to continue to upload file to a shared link with sslt example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteUploadFileToSharedLinkWithSslt();
+                Console.WriteLine();
+                Console.WriteLine("Upload file to a folder for the above link with contribute permissions to folder is completed. Press enter to continue to rename folder example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteRenameFolder();
