@@ -79,7 +79,12 @@ namespace CSharpSampleApp
 
                 ContentExample.ExecuteChunked();
                 Console.WriteLine();
-                Console.WriteLine("Chunked upload part is completed. Press enter to continue to create IRM shared links example.");
+                Console.WriteLine("Chunked upload part is completed. Press enter to continue to Get files in a folder example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteGetFilesInAFolder();
+                Console.WriteLine();
+                Console.WriteLine("Get files in a folder part is completed. Press enter to continue to create IRM shared links example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteLinksPost();

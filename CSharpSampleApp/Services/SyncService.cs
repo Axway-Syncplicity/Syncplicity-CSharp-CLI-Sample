@@ -42,6 +42,8 @@ namespace CSharpSampleApp.Services
         /// </summary>
         public static string FileUrlPut => SyncAPIUrlPrefix + "file.svc/{0}/file";
 
+        public static string FolderFilesUrl => SyncAPIUrlPrefix + "folder_files.svc/{0}/folder/{1}/files";
+
         #endregion Protected Properties
 
         #region Public Methods
@@ -169,6 +171,10 @@ namespace CSharpSampleApp.Services
             return HttpGet<File>(string.Format(FileUrl, syncpointId, fileId));
         }
 
+        public static File[] GetFilesInFolder(long syncpointId, long folderId)
+        {
+            return HttpGet<File[]>(string.Format(FolderFilesUrl, syncpointId, folderId));
+        }
 
         /// <summary>
         /// Renames file in folder
@@ -205,13 +211,18 @@ namespace CSharpSampleApp.Services
             return uri;
         }
 
-        
+
         #endregion Private Methods
 
         public static void RemoveFolder(long syncpointId, long folderId, bool removePermanently)
         {
             HttpDelete<Folder>(GetUrl(syncpointId, folderId, string.Empty,
                 removePermanently ? "permanently" : string.Empty, FolderUrl));
+        }
+
+        public static Folder[] RemoveFolderFolders(long syncpointId, long folderId, Folder[] folders)
+        {
+            return HttpDelete<Folder[]>(string.Format(FolderFoldersUrl, syncpointId, folderId), folders);
         }
 
         public static void RemoveFile(long syncpointId, long fileId, bool removePermanently)

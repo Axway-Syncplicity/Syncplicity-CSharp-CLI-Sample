@@ -274,6 +274,9 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine("eDiscovery On-Behalf-Of User: Downloading permanently deleted content...");
             DownloadFile(localFilePath, true);
 
+            //EDiscovery admins can only do read on behalf of user so reset OAuth for data custodian user and delete folder
+            ApiContext.SyncplicityUserAppToken = ConfigurationHelper.DataCustodianUserToken;
+            ApiGateway.Authenticate();
             RemoveFolderPermanently();
         }
 
@@ -397,8 +400,9 @@ namespace CSharpSampleApp.Examples
         /*
          * Content - Create Nested Folders
          * - Creating a Syncpoint
-         * - Creating apParent folder
+         * - Creating a Parent folder
          * - Creating nested folders into parent folder
+         * - Removing the nested folders
          * - Removing the folders
         */
         public static void ExecuteCreateNestedFolder()
@@ -411,7 +415,32 @@ namespace CSharpSampleApp.Examples
 
             CreateFolder();
             CreateNestedFolders();
+            SoftRemoveFolderFolders(_currentSyncpoint.Id, _currentFolder.FolderId);
             RemoveFoldersPermanently();
+        }
+
+        #endregion
+
+        #region FolderFiles
+
+        /*
+         * Content - Get Files In A Folder
+         * - Creating a Syncpoint
+         * - Creating a Parent folder
+         * - Uploading a file into the folder
+         * - Get files in a folder
+         * - Removing the folder
+        */
+        public static void ExecuteGetFilesInAFolder()
+        {
+            var localFilePath = ConfigurationHelper.UploadFileSmall;
+
+            CreateSyncpoint();
+            CreateFolder();
+            UploadFile(localFilePath, UploadMode.Simple);
+            GetFilesInAFolder(localFilePath);
+            RemoveFilePermanently(localFilePath);
+            RemoveFolderPermanently();
         }
 
         #endregion
@@ -520,6 +549,26 @@ namespace CSharpSampleApp.Examples
             Console.WriteLine("No folder to remove.");
         }
 
+        private static void SoftRemoveFolderFolders(long syncpointId, long folderId)
+        {
+            var nestedFolders = SyncService.GetFolderFolders(syncpointId, folderId).ToList();
+
+            if (nestedFolders.Count == 0)
+            {
+                Console.WriteLine("No Nested Folders To Remove");
+                return;
+            }
+
+            var nestedFoldersToDelete = new List<Folder>();
+            foreach (var nestedFolder in nestedFolders)
+            {
+                nestedFoldersToDelete.Add(new Folder { FolderId = nestedFolder.FolderId, Status = FolderStatus.Removed });
+            }
+            SyncService.RemoveFolderFolders(syncpointId, folderId, nestedFoldersToDelete.ToArray());
+            Console.WriteLine($"Nested Folder/s with id/s: {string.Join(",", nestedFolders.Select(f => f.FolderId))} Soft Removed");
+            Console.WriteLine();
+        }
+
         private static void RemoveFoldersPermanently()
         {
             if (_currentFolder == null)
@@ -528,17 +577,8 @@ namespace CSharpSampleApp.Examples
                 return;
             }
 
-            var folders = SyncService.GetFolderFolders(_currentFolder.SyncpointId, _currentFolder.FolderId);
-
-            foreach (var folder in folders)
-            {
-                RemoveFolderPermanently(folder.SyncpointId, folder.FolderId);
-                Console.WriteLine($"Folder with id: {folder.FolderId} and ParentFolderId: {_currentFolder.FolderId} is Reomved Permanently");
-                Console.WriteLine();
-            }
-
             RemoveFolderPermanently(_currentFolder.SyncpointId, _currentFolder.FolderId);
-            Console.WriteLine($"Parent Folder with id: {_currentFolder.FolderId} is Reomved Permanently");
+            Console.WriteLine($"Parent Folder with id: {_currentFolder.FolderId} is Removed Permanently");
         }
 
         private static void RemoveFilePermanently(string localFilePath)
@@ -959,6 +999,18 @@ namespace CSharpSampleApp.Examples
                 // Must set this, otherwise, hangs when uploadFinished.WaitOne() is called. 
                 UploadFinished.Set();
             }
+        }
+
+        private static void GetFilesInAFolder(string localFilePath)
+        {
+            var file = GetCurrentFile(localFilePath);
+            if (file == null)
+            {
+                Console.WriteLine("You need to create file first");
+                return;
+            }
+            Console.WriteLine();
+            SyncService.GetFilesInFolder(_currentSyncpoint.Id, _currentFolder.FolderId);
         }
 
         private static void ChangeOwnerOfSyncpoint(string newOwnerEmail)
