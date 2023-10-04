@@ -218,6 +218,7 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Entities\RequestBodyExamples\AllTypesOfSyncpointsCreationBody.json" />
     <None Include="packages.config" />
     <Content Include="Resources\10MB.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
