@@ -1,0 +1,30 @@
+[
+	{
+		"Type": 1,
+		"Name": "MyDocuments"
+	},
+	{
+		"Type": 2,
+		"Name": "MyMusic"
+	},
+	{
+		"Type": 3,
+		"Name": "MyPictures"
+	},
+	{
+		"Type": 4,
+		"Name": "Desktop"
+	},
+	{
+		"Type": 5,
+		"Name": "Favorites"
+	},
+	{
+		"Type": 6,
+		"Name": "Custom"
+	},
+	{
+		"Type": 8,
+		"Name": "SyncDrive"
+	}
+]

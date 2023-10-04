@@ -6,9 +6,6 @@ namespace CSharpSampleApp.Entities
     public enum SyncPointType : byte
     {
         [EnumMember]
-        Unknown = 0,
-
-        [EnumMember]
         MyDocuments = 1,
 
         [EnumMember]
@@ -25,9 +22,6 @@ namespace CSharpSampleApp.Entities
 
         [EnumMember]
         Custom = 6,
-        
-        [EnumMember]
-        Private = 7,
 
         [EnumMember]
         SyncplicityDrive = 8

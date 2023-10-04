@@ -69,7 +69,12 @@ namespace CSharpSampleApp
 
                 ProvisioningExample.Execute();
                 Console.WriteLine();
-                Console.WriteLine("Provisioning part is completed. Press enter to continue to simple file upload example.");
+                Console.WriteLine("Provisioning part is completed. Press enter to continue to Get Syncpoints depending on type example.");
+                Console.ReadLine();
+
+                ContentExample.ExecuteGetSyncPoints();
+                Console.WriteLine();
+                Console.WriteLine("Get Syncpoints depending on type part is completed. Press enter to continue to simple file upload example.");
                 Console.ReadLine();
 
                 ContentExample.ExecuteSimple();

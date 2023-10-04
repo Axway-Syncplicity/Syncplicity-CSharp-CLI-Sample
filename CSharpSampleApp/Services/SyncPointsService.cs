@@ -1,5 +1,6 @@
-﻿using System;
-using CSharpSampleApp.Entities;
+﻿using CSharpSampleApp.Entities;
+using System;
+using System.Linq;
 
 namespace CSharpSampleApp.Services
 {
@@ -50,16 +51,16 @@ namespace CSharpSampleApp.Services
         /// Gets syncpoints.
         /// </summary>
         /// <param name="include">The include param.</param>
+        /// <param name="includeType">If types are not passed, all types except SyncplicityDrive will be returned.</param>
         /// <returns>The array of syncpoints.</returns>
-        public static SyncPoint[] GetSyncpoints(Include include = Include.None)
+        public static SyncPoint[] GetSyncpoints(Include include = Include.None, params SyncPointType[] includeType)
         {
-            var includeStr = FormatInclude(include);
+            var includeStr = FormatIncludeParameter(include);
+            var includeTypeStr = FormatIncludeTypeParameter(includeType);
+            var uri = SyncpointsUrl;
+            uri = AppendQueryParam(includeStr, uri, includeTypeStr);
 
-            var url = string.IsNullOrWhiteSpace(includeStr)
-                ? SyncpointsUrl
-                : SyncpointsUrl + $"?include={includeStr}";
-
-            return HttpGet<SyncPoint[]>(url);
+            return HttpGet<SyncPoint[]>(uri);
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace CSharpSampleApp.Services
         {
             var url = string.Format(SyncpointUrl, syncpointId);
 
-            var includeStr = FormatInclude(include);
+            var includeStr = FormatIncludeParameter(include);
             if (!string.IsNullOrWhiteSpace(includeStr))
                 url += $"?include={includeStr}";
 
@@ -110,7 +111,7 @@ namespace CSharpSampleApp.Services
         {
             var url = string.Format(SyncpointUrl, syncpoint.Id);
 
-            var includeStr = FormatInclude(include);
+            var includeStr = FormatIncludeParameter(include);
             if (!string.IsNullOrWhiteSpace(includeStr))
                 url += $"?include={includeStr}";
 
@@ -118,22 +119,47 @@ namespace CSharpSampleApp.Services
         }
 
         public static void DeleteSyncpoint(long syncpointId)
-		{
-			var url = string.Format(SyncpointUrl, syncpointId);
+        {
+            var url = string.Format(SyncpointUrl, syncpointId);
 
-			HttpDelete<object>(url);
-		}
+            HttpDelete<object>(url);
+        }
 
         #endregion Public Methods
 
         #region Private Methods
 
-        private static string FormatInclude(Include include)
+        private static string FormatIncludeParameter(Include include)
         {
             if (include == Include.None)
+            {
                 return string.Empty;
+            }
 
             return include.ToString().Replace(" ", "").ToLower();
+        }
+
+        private static string AppendQueryParam(string includeStr, string uri, string includeTypeStr)
+        {
+            if (!string.IsNullOrEmpty(includeStr))
+            {
+                uri = string.Format("{0}?include={1}", uri, includeStr);
+            }
+            if (!string.IsNullOrEmpty(includeTypeStr))
+            {
+                uri = string.Format("{0}{1}includeType={2}", uri, uri.Contains('?') ? "&" : "?", includeTypeStr);
+            }
+            return uri;
+        }
+
+        private static string FormatIncludeTypeParameter(params SyncPointType[] includeType)
+        {
+            if (includeType == null)
+            {
+                return string.Empty;
+            }
+
+            return string.Join(",", includeType.Select(i => (int)i));
         }
 
         #endregion
