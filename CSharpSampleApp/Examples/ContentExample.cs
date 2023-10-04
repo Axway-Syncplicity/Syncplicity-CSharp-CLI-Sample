@@ -26,6 +26,28 @@ namespace CSharpSampleApp.Examples
         private static readonly AutoResetEvent UploadFinished = new AutoResetEvent(false);
         private static User _oldOwner;
         private static readonly Random _random = new Random();
+        private const string REQUEST_EXAMPLES_FOLDER_PATH = @"Entities\RequestBodyExamples";
+
+        /*
+        * - Content - Get Syncpoints for various types
+        * - Creating all types of Syncpoints(MyDocuments, MyMusic, MyPictures, Desktop, Favorites, Custom, Private, SyncplicityDrive)
+        * - Get syncpoints depending on the includeType query parameter by calling /syncpoint/syncpoints.svc/?includeType
+        * - Removing the syncpoint
+        */
+        public static void ExecuteGetSyncPoints()
+        {
+            Console.WriteLine("Initiate the creation of SyncPoints for different types...");
+            var syncpointsCreateBody = ReadAndDeserializeJsonFile<SyncPoint[]>(REQUEST_EXAMPLES_FOLDER_PATH, "AllTypesOfSyncpointsCreationBody.json");
+
+            var createdSyncPoints = SyncPointsService.CreateSyncpoints(syncpointsCreateBody);
+            Console.WriteLine();
+            ValidateSyncPointsPresented(createdSyncPoints);
+
+            Console.WriteLine("Initiate the retrieving of SyncPoints for various types...");
+            SyncPointsService.GetSyncpoints(SyncPointsService.Include.Participants, SyncPointType.SyncplicityDrive, SyncPointType.Custom, SyncPointType.Desktop); //Change according to your preferences
+            Console.WriteLine();
+            DeleteSyncpoints(createdSyncPoints);
+        }
 
         /*
          * Content - Simple
@@ -445,6 +467,20 @@ namespace CSharpSampleApp.Examples
 
         #endregion
 
+        /// <summary>
+        /// Deletes syncpoints by Id
+        /// </summary>
+        private static void DeleteSyncpoints(SyncPoint[] syncPointsToDelete)
+        {
+            ValidateSyncPointsPresented(syncPointsToDelete);
+            Console.WriteLine("Initiate the deleting of created SyncPoints...");
+            foreach (var syncpointToDelete in syncPointsToDelete)
+            {
+                SyncPointsService.DeleteSyncpoint(syncpointToDelete.Id);
+            }
+            Console.WriteLine();
+        }
+
         private static bool ValidateConfigurationForSharedLinkSample(string localFilePath)
         {
             var errors = EvaluateConfigValidationRulesForOrdinarySample().ToList();
@@ -701,11 +737,7 @@ namespace CSharpSampleApp.Examples
 
             Console.WriteLine();
 
-            if (createdSyncPoints == null || createdSyncPoints.Length == 0)
-            {
-                Console.WriteLine("Error occurred during creating SyncPoint.");
-                return;
-            }
+            ValidateSyncPointsPresented(createdSyncPoints);
 
             // Need to call getSyncPoint to hydrate all the meta data of the syncpoint,
             // in particular we need RootFolderId so that we can create a folder next.
@@ -728,6 +760,14 @@ namespace CSharpSampleApp.Examples
             }
 
             Console.WriteLine($"Finished SyncPoint Creation. Created new SyncPoint {_currentSyncpoint.Name} with Id: {_currentSyncpoint.Id}");
+        }
+
+        private static void ValidateSyncPointsPresented(SyncPoint[] createdSyncPoints)
+        {
+            if (createdSyncPoints == null || createdSyncPoints.Length == 0)
+            {
+                throw new InvalidOperationException("Error occurred - SyncPoints are not presented.");
+            }
         }
 
         private static void CreateFolder()
@@ -1156,6 +1196,27 @@ namespace CSharpSampleApp.Examples
                 RemoveFilePermanently(file);
                 RemoveFolderPermanently();
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Reads a JSON file located in the specified folder.
+        /// </summary>
+        /// <param name="folderName">The name of the folder containing the JSON file.</param>
+        /// <param name="jsonFileName">The name of the JSON file to read.</param>
+        /// <returns>The JSON content as a string, or throw an exception if the file is not found.</returns>
+        private static T ReadAndDeserializeJsonFile<T>(string folderName, string jsonFileName)
+        {
+            string jsonFilePath = Path.Combine(folderName, jsonFileName);
+            try
+            {
+                string jsonContent = System.IO.File.ReadAllText(jsonFilePath);
+                T deserializedObject = JsonConvert.DeserializeObject<T>(jsonContent);
+                return deserializedObject;
+            }
+            catch (Exception)
+            {
+                throw new FileNotFoundException($"The JSON file was not found in: '{jsonFilePath}'");
             }
         }
 
